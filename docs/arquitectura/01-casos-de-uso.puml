@@ -1,0 +1,75 @@
+@startuml casos-de-uso
+!include _estilo.iuml
+title Escenarios (+1) · Diagrama de casos de uso de SIGEPES
+left to right direction
+
+actor "Pescador" as Pescador
+actor "Armador" as Armador
+actor "Inspector AUNAP" as Inspector
+actor "Analista de\nsostenibilidad" as Analista
+actor "Administrador" as Admin
+actor "Ciudadano\n(sin cuenta)" as Ciudadano
+
+Armador -|> Pescador
+
+rectangle "SIGEPES" {
+  usecase "Iniciar sesión por rol" as UC_Login
+  usecase "Registrar embarcación\ny artes de pesca" as UC_Vessel
+  usecase "Registrar faena\ny capturas" as UC_Trip
+  usecase "Validar talla mínima,\nveda y permiso" as UC_Rules
+  usecase "Registrar recorrido GPS\n(con o sin señal)" as UC_Gps
+  usecase "Cerrar faena" as UC_Close
+  usecase "Descontar captura\nde la cuota" as UC_Discount
+  usecase "Consultar especies, vedas\ny zonas restringidas" as UC_Catalog
+  usecase "Recibir alertas de\ncumplimiento" as UC_Alerts
+  usecase "Trazar lote con QR" as UC_Lot
+  usecase "Gestionar cuotas" as UC_Quotas
+  usecase "Gestionar especies\ny vedas" as UC_Species
+  usecase "Ver indicadores de\nsostenibilidad" as UC_Indicators
+  usecase "Exportar reportes\noficiales (CSV/PDF)" as UC_Export
+  usecase "Validar permisos\ny licencias" as UC_Permits
+  usecase "Gestionar denuncias" as UC_ManageReports
+  usecase "Gestionar documentos\nversionados" as UC_Docs
+  usecase "Administrar usuarios\ny auditoría" as UC_Admin
+  usecase "Radicar denuncia\n(anónima)" as UC_Report
+  usecase "Verificar lote o permiso\npor código" as UC_Verify
+  usecase "Detectar ingreso a\nzona restringida" as UC_Zone
+  usecase "Avisar vencimientos\n(barrido diario)" as UC_Sweep
+}
+
+Pescador --> UC_Login
+Pescador --> UC_Vessel
+Pescador --> UC_Trip
+Pescador --> UC_Gps
+Pescador --> UC_Close
+Pescador --> UC_Catalog
+Pescador --> UC_Alerts
+Pescador --> UC_Lot
+
+Inspector --> UC_Permits
+Inspector --> UC_ManageReports
+Inspector --> UC_Indicators
+Inspector --> UC_Export
+
+Analista --> UC_Quotas
+Analista --> UC_Species
+Analista --> UC_Indicators
+Analista --> UC_Export
+Analista --> UC_Docs
+
+Admin --> UC_Admin
+Admin --> UC_Docs
+
+Ciudadano --> UC_Report
+Ciudadano --> UC_Verify
+
+actor "Reloj del\nsistema" as Reloj
+UC_Sweep <-- Reloj
+
+UC_Trip ..> UC_Rules : <<include>>
+UC_Close ..> UC_Discount : <<include>>
+UC_Gps ..> UC_Zone : <<include>>
+UC_Discount ..> UC_Alerts : <<extend>>\n(umbral 80 % / 95 %)
+UC_Zone ..> UC_Alerts : <<extend>>
+UC_Sweep ..> UC_Alerts : <<include>>
+@enduml

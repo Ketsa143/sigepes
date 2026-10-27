@@ -1,0 +1,165 @@
+@startuml clases
+!include _estilo.iuml
+title Vista lógica · Diagrama de clases del dominio (entidades JPA)
+hide empty methods
+
+enum Role {
+  FISHER
+  SHIPOWNER
+  INSPECTOR
+  ANALYST
+  ADMIN
+}
+
+class Usuario <<UserEntity>> {
+  id : String
+  nationalId : String
+  fullName : String
+  email : String
+  passwordHash : String  // BCrypt
+  role : Role
+}
+
+class Embarcacion <<VesselEntity>> {
+  id : String
+  name : String
+  registration : String
+  port : String
+  capacityTons : BigDecimal
+}
+
+class ArtePesca <<FishingGearEntity>> {
+  id : String
+  name : String
+}
+
+class Permiso <<PermitEntity>> {
+  id : String
+  number : String
+  type : String
+  issuedAt : LocalDate
+  expiresAt : LocalDate
+  verificationCode : String
+}
+
+class Faena <<FishingTripEntity>> {
+  id : String
+  zone : String
+  tripDate : LocalDate
+  landingLatitude : BigDecimal
+  landingLongitude : BigDecimal
+  nullDeclaration : boolean
+  closedAt : Instant
+  +isOpen() : boolean
+}
+
+class Captura <<CatchEntity>> {
+  id : String
+  quantity : Integer
+  weightKg : BigDecimal
+  averageSizeCm : BigDecimal
+  minSizeCmAtCapture : BigDecimal
+  quotaId : String
+}
+
+class Especie <<SpeciesEntity>> {
+  id : String
+  commonName : String
+  scientificName : String
+  minSizeCm : BigDecimal
+  region : SpeciesRegion
+  imageUrl : String
+}
+
+class Veda <<ClosureEntity>> {
+  id : String
+  zone : String
+  startDate : LocalDate
+  endDate : LocalDate
+  resolutionNumber : String
+}
+
+class Cuota <<QuotaEntity>> {
+  id : String
+  zone : String
+  periodStart : LocalDate
+  periodEnd : LocalDate
+  totalKg : BigDecimal
+  lastThreshold : int
+  +consumedPercent() : BigDecimal
+}
+
+class ZonaRestringida <<RestrictedZoneEntity>> {
+  id : String
+  name : String
+  zoneType : ZoneType
+  polygonJson : String
+  minLat / maxLat / minLon / maxLon
+  resolutionNumber : String
+}
+
+class PosicionFaena <<TripPositionEntity>> {
+  id : String
+  latitude : BigDecimal
+  longitude : BigDecimal
+  recordedAt : Instant
+}
+
+class EventoZona <<ZoneEventEntity>> {
+  id : String
+  occurredAt : Instant
+}
+
+class Lote <<LotEntity>> {
+  id : String
+  code : String  // QR
+  weightKg : BigDecimal
+  landingDate : LocalDate
+  legalChecks : String
+}
+
+class Denuncia <<IllegalReportEntity>> {
+  id : String
+  trackingCode : String
+  reportType : ReportType
+  anonymous : boolean
+  latitude / longitude
+}
+
+class Alerta <<AlertEntity>> {
+  id : String
+  recipientId : String
+  alertType : AlertType
+  severity : AlertSeverity
+  readAt : Instant
+}
+
+class RegistroAuditoria <<AuditLogEntity>> {
+  id : String
+  actionType : AuditActionType
+  occurredAt : Instant
+  module : String
+  entityId : String
+}
+
+Usuario "1" -- "0..*" Embarcacion : posee >
+Usuario "1" -- "0..*" Permiso : titular de >
+Usuario -- Role
+Usuario "1" -- "0..*" Faena : registra >
+Faena "0..*" --> "1" Embarcacion
+Faena "0..*" --> "1" ArtePesca
+Faena "0..*" --> "1" Permiso : ampara <
+Faena "1" *-- "0..*" Captura
+Faena "1" *-- "0..*" PosicionFaena
+Captura "0..*" --> "1" Especie
+Captura "0..*" ..> "0..1" Cuota : descuenta de >
+Cuota "0..*" --> "1" Especie
+Cuota "0..*" --> "0..1" Embarcacion : asignada a >
+Veda "0..*" --> "1" Especie
+PosicionFaena "0..*" --> "0..1" ZonaRestringida : dentro de >
+EventoZona "0..*" --> "1" Faena
+EventoZona "0..*" --> "1" ZonaRestringida
+Lote "0..*" --> "1" Captura : origen >
+Denuncia "0..*" --> "0..1" Usuario : reportante\n(nulo si es anónima)
+Alerta "0..*" ..> "1" Usuario : destinatario >
+@enduml

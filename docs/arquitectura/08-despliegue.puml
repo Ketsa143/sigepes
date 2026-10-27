@@ -1,0 +1,42 @@
+@startuml despliegue
+!include _estilo.iuml
+title Vista física · Diagrama de despliegue
+
+node "Dispositivo del usuario\n(celular o PC)" as Device {
+  node "Navegador" as Browser {
+    artifact "PWA SIGEPES\n(JS/CSS + service worker)" as Pwa
+    database "IndexedDB /\nlocalStorage" as LocalDb
+  }
+}
+
+cloud "Vercel (CDN global)" as Vercel {
+  artifact "Frontend compilado\n(dist/)\nproject-sigepes.vercel.app" as Static
+}
+
+cloud "Railway · región us-east (iad)" as Railway {
+  node "Contenedor Docker\nsigepes-api" as Api {
+    artifact "sigepes-backend.jar\n(Spring Boot, JVM 21,\nusuario sin privilegios)" as Jar
+  }
+  folder "Volumen sigepes-uploads\n/var/data" as Volume
+  database "PostgreSQL 16\n(red privada,\nsin acceso público)" as Pg
+}
+
+cloud "GitHub" as GitHub {
+  artifact "Repositorio\nKetsa143/sigepes" as Repo
+  node "GitHub Actions\n(CI · Deploy · Preview)" as Actions
+  artifact "Imágenes en GHCR\n(etiqueta = commit)" as Ghcr
+}
+
+cloud "Proveedores de teselas\n(OSM · Esri · OpenTopoMap)" as Tiles
+
+Pwa --> Static : HTTPS (descarga la app)
+Pwa --> Jar : HTTPS JSON /api/v1 + SSE\n(JWT Bearer)
+Pwa --> Tiles : HTTPS teselas
+Pwa --> LocalDb
+Jar --> Pg : JDBC (red privada)
+Jar --> Volume : archivos
+Repo --> Actions : push / pull request
+Actions --> Ghcr : publica imágenes
+Actions --> Jar : railway up\n(espera /actuator/health = UP)
+Actions --> Static : vercel deploy --prebuilt
+@enduml

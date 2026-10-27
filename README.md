@@ -11,6 +11,11 @@ Sigepes/
 └── backend/    Spring Boot 4 + Java 21 + PostgreSQL → :8080
 ```
 
+
+## Documentación del Sprint 2
+
+Modelo de arquitectura 4+1, retrospectiva del Sprint 1, Sprint Backlog, atributos de calidad y presentación: [docs/](docs/README.md).
+
 ## Arrancar todo
 
 ```bash
