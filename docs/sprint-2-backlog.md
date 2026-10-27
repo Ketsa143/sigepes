@@ -44,20 +44,24 @@ HU-09, HU-15 y HU-18.
 
 ## C. Criterios de aceptación
 
-El texto completo de cada criterio está en la descripción de la historia en Jira. Los marcados
-**[atributo]** son los que verifican los atributos de calidad.
+El texto completo de cada criterio está en la descripción de la historia en Jira. Solo llevan
+**[atributo]** los criterios que corresponden a uno de los 12 escenarios comprobables de
+[atributos-calidad.md](atributos-calidad.md); los demás son criterios funcionales.
 
 | Historia | Criterios de aceptación |
 |---|---|
-| HU-21 | AC-21.1 el CI bloquea el merge si falla · AC-21.2 contenedores de producción y Flyway · **AC-21.3 [Disponibilidad]** health check y reinicio automático · **AC-21.4 [Seguridad]** HTTPS, secretos fuera del repositorio y CORS · **AC-21.5 [Rendimiento]** CDN y carga < 3 s · AC-21.6 rollback en un paso |
-| HU-07 | AC-07.1 crear cuota · AC-07.2 descuento automático · AC-07.3 bloqueo por cuota agotada · AC-07.4 alertas al 80 % y 95 % · **AC-07.5 [Rendimiento]** saldo < 2 s · **AC-07.6 [Disponibilidad]** validación sin conexión · **AC-07.7 [Usabilidad]** mensaje claro al exceder la cuota |
-| HU-04 | AC-04.1 GPS cada 5 min · AC-04.2 polígonos de zonas · AC-04.3 alerta inmediata · AC-04.4 mapa de la faena · **AC-04.5 [Rendimiento]** punto en zona < 500 ms · **AC-04.6 [Disponibilidad]** cola sin conexión · **AC-04.7 [Usabilidad]** mapa usable a 375 px con capas Mapa/Satélite/Relieve |
-| HU-09 | AC-09.1 lote y QR · AC-09.2 solo origen legal · AC-09.3 eventos de custodia · AC-09.4 verificación pública · **AC-09.5 [Seguridad]** cadena de hash y sin datos personales · **AC-09.6 [Rendimiento]** < 1,5 s |
-| HU-11 | AC-11.1 tipos de alerta · AC-11.2 bandeja y contador · AC-11.3 críticas no descartables · AC-11.4 audiencia por rol · **AC-11.5 [Disponibilidad]** persistidas antes de enviarse · **AC-11.6 [Rendimiento]** < 5 s |
-| HU-10 | AC-10.1 formulario con fotos · AC-10.2 modo anónimo · AC-10.3 código de seguimiento · AC-10.4 flujo del inspector · **AC-10.5 [Seguridad]** anonimato, EXIF y roles · **AC-10.6 [Disponibilidad]** envío al reconectar · **AC-10.7 [Usabilidad]** estado de conexión visible |
-| HU-12 | AC-12.1 indicadores · AC-12.2 filtros · AC-12.3 solo datos validados · **AC-12.4 [Usabilidad]** gráficos accesibles · **AC-12.5 [Rendimiento]** < 3 s · **AC-12.6 [Seguridad]** solo autoridad |
-| HU-15 | AC-15.1 carga · AC-15.2 versiones · AC-15.3 vencimientos · AC-15.4 búsqueda · **AC-15.5 [Seguridad]** tipo real, enlaces firmados y auditoría · **AC-15.6 [Disponibilidad]** almacenamiento durable |
-| HU-18 | AC-18.1 catálogo · AC-18.2 filtros · AC-18.3 PDF/CSV · AC-18.4 datos validados · **AC-18.5 [Rendimiento]** asíncrono para periodos largos · **AC-18.6 [Seguridad]** roles y auditoría |
+| HU-21 | AC-21.1 el CI bloquea el merge si falla · AC-21.2 contenedores de producción y Flyway · **AC-21.3 [Disponibilidad · D1]** health check y reinicio automático · AC-21.4 HTTPS, secretos fuera del repositorio y CORS · **AC-21.5 [Rendimiento · R1, R3]** 50 usuarios con p95 < 1 s y caché/CDN · AC-21.6 rollback en un paso |
+| HU-07 | AC-07.1 crear cuota · AC-07.2 descuento automático · AC-07.3 bloqueo por cuota agotada · AC-07.4 alertas al 80 % y 95 % · AC-07.5 saldo acumulado · **AC-07.6 [Disponibilidad · D3]** catálogo y cuotas sin conexión · **AC-07.7 [Usabilidad · U3]** mensaje claro al exceder la cuota |
+| HU-04 | AC-04.1 GPS cada 5 min · AC-04.2 polígonos de zonas · AC-04.3 alerta inmediata · AC-04.4 mapa de la faena · AC-04.5 prefiltro de zona · AC-04.6 cola de posiciones sin conexión · **AC-04.7 [Usabilidad · U1]** mapa usable a 375 px con capas Mapa/Satélite/Relieve |
+| HU-09 | AC-09.1 lote y QR · AC-09.2 solo origen legal · AC-09.3 eventos de custodia · AC-09.4 verificación pública · AC-09.5 cadena de hash y sin datos personales · AC-09.6 vista pública en caché |
+| HU-11 | AC-11.1 tipos de alerta · AC-11.2 bandeja y contador · AC-11.3 críticas no descartables · AC-11.4 audiencia por rol · AC-11.5 alertas persistidas · AC-11.6 entrega por eventos (SSE) |
+| HU-10 | AC-10.1 formulario con fotos · AC-10.2 modo anónimo · AC-10.3 código de seguimiento · AC-10.4 flujo del inspector · AC-10.5 anonimato, EXIF y roles · AC-10.6 envío al reconectar · **AC-10.7 [Usabilidad · U2]** estado de conexión visible |
+| HU-12 | AC-12.1 indicadores · AC-12.2 filtros · AC-12.3 solo datos validados · AC-12.4 gráficos accesibles · AC-12.5 agregados en base de datos · **AC-12.6 [Seguridad · S2]** solo autoridad (403 al pescador) |
+| HU-15 | AC-15.1 carga · AC-15.2 versiones · AC-15.3 vencimientos · AC-15.4 búsqueda · AC-15.5 tipo real, enlaces firmados y auditoría · AC-15.6 volumen persistente |
+| HU-18 | AC-18.1 catálogo · AC-18.2 filtros · AC-18.3 PDF/CSV · AC-18.4 datos validados · **AC-18.5 [Rendimiento · R2]** exportación asíncrona (202) · AC-18.6 roles y auditoría |
+
+Los escenarios D2 (faena sin señal), S1 (límite de inicios de sesión) y S3 (JWT) se apoyan en historias
+del Sprint 1 (HU-03 y HU-01) y se verifican en la tarea SLGEP-142.
 
 ## D. Tareas por historia (subtareas en Jira)
 
