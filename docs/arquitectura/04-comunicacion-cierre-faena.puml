@@ -1,0 +1,27 @@
+@startuml comunicacion-cierre-faena
+!include _estilo.iuml
+title Vista lógica · Diagrama de comunicación: cerrar una faena
+allowmixing
+
+actor ":Pescador" as P
+object ":TripsPage" as UI
+object ":TripController" as C
+object ":TripService" as S
+object ":ComplianceService" as R
+object ":QuotaService" as Q
+object ":QuotaRepository" as QR
+object ":AlertService" as A
+object ":AuditService" as AU
+object ":TripRepository" as TR
+
+P -right-> UI : 1: cerrarFaena(gpsDesembarco)
+UI -right-> C : 2: POST /faenas/{id}/cerrar
+C -down-> S : 3: close(id, request)
+S -left-> TR : 4: findById(id)
+S -down-> R : 5: requireClosable(n, nula)
+S -right-> Q : 6*: consume(especie, zona, fecha, kg)
+Q -down-> QR : 6.1: lockById(cuota)\n6.2: save(cuota)
+Q -right-> A : 6.3 [umbral cruzado]:\nQuotaThresholdReached
+S -down-> AU : 8: record(TRIP_CLOSED)
+S -left-> TR : 7: save(faena CLOSED)
+@enduml

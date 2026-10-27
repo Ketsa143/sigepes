@@ -1,0 +1,48 @@
+@startuml componentes
+!include _estilo.iuml
+title Vista de desarrollo · Diagrama de componentes
+
+package "Frontend · PWA (React 19 + Vite + MUI)" {
+  [Módulos de página\n(trips, quotas, zones, reports,\nindicators, traceability, ...)] as Pages
+  [Cliente API\n(axios + react-query)] as ApiClient
+  [Estado de sesión\n(zustand)] as Session
+  [Almacén sin conexión\n(IndexedDB / localStorage)] as Offline
+  [Mapa GeoMap\n(Google · Leaflet/OSM · esquema)] as Map
+  [Service worker\n(Workbox)] as SW
+}
+
+package "Backend · API REST (Spring Boot 4, Java 21)" {
+  [Seguridad\n(JwtAuthenticationFilter,\nRateLimitFilter)] as Sec
+  [Controladores REST\n/api/v1/**] as Rest
+  [Servicios de dominio\n(Trips, Quotas, Geo, Reports,\nTraceability, Statistics, ...)] as Domain
+  [Reglas de cumplimiento\n(ComplianceService)] as Rules
+  [Alertas\n(eventos + SSE + barrido)] as Alerts
+  [Auditoría\n(AuditService)] as Audit
+  [Repositorios JPA] as Repo
+  [Flyway V1–V14] as Flyway
+}
+
+database "PostgreSQL 16" as PG
+folder "Volumen /var/data\n(fotos y documentos)" as Vol
+cloud "Teselas de mapa\n(OSM · Esri · OpenTopoMap)" as Tiles
+
+
+Pages --> ApiClient
+Pages --> Map
+Pages --> Offline
+ApiClient --> Session : token JWT
+SW ..> Pages : caché de la app
+Map ..> Tiles
+
+ApiClient --> Sec : HTTPS JSON /api/v1 (JWT Bearer)
+ApiClient --> Alerts : SSE /alertas/stream
+Sec --> Rest
+Rest --> Domain
+Domain --> Rules
+Domain --> Alerts
+Domain --> Audit
+Domain --> Repo
+Repo --> PG
+Flyway --> PG
+Domain --> Vol
+@enduml

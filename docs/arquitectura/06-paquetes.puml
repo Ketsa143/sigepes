@@ -1,0 +1,49 @@
+@startuml paquetes
+!include _estilo.iuml
+title Vista de desarrollo · Diagrama de paquetes
+
+package "frontend/src" {
+  package "app" {
+    package "router"
+    package "layouts"
+  }
+  package "modules" {
+    package "auth · users · audit"
+    package "vessels · permits · trips"
+    package "species · closures · quotas · zones"
+    package "reports · notifications · indicators · statistics · traceability · documents"
+  }
+  package "shared" {
+    package "api · errors"
+    package "components · map · charts"
+    package "hooks · storage · sync"
+    package "theme · styles"
+  }
+}
+
+package "backend · com.sigepes.backend" {
+  package "security · config"
+  package "auth · users · audit (api)"
+  package "vessels · gears · permits · trips"
+  package "species · closures · quotas · geo"
+  package "rules"
+  package "alerts"
+  package "reports · traceability · documents (api)"
+  package "indicators · statistics · dashboard"
+  package "common · seed"
+}
+
+"app" ..> "modules" : <<import>>
+"modules" ..> "shared" : <<import>>
+"api · errors" ..> "security · config" : HTTPS /api/v1
+
+"security · config" ..> "auth · users · audit (api)"
+"auth · users · audit (api)" ..> "common · seed"
+"vessels · gears · permits · trips" ..> "rules"
+"vessels · gears · permits · trips" ..> "species · closures · quotas · geo"
+"vessels · gears · permits · trips" ..> "auth · users · audit (api)" : auditoría y usuario actual
+"species · closures · quotas · geo" ..> "alerts"
+"reports · traceability · documents (api)" ..> "vessels · gears · permits · trips"
+"indicators · statistics · dashboard" ..> "vessels · gears · permits · trips"
+"indicators · statistics · dashboard" ..> "species · closures · quotas · geo"
+@enduml

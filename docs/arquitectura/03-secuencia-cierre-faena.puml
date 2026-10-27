@@ -1,0 +1,50 @@
+@startuml secuencia-cierre-faena
+!include _estilo.iuml
+title Vista lógica · Diagrama de secuencia: cerrar una faena (HU-03 + HU-07 + HU-11)
+autonumber
+
+actor Pescador
+participant "TripsPage\n(React)" as UI
+participant "JwtAuthenticationFilter" as Jwt
+participant "TripController" as Ctrl
+participant "TripService" as Trips
+participant "ComplianceService" as Rules
+participant "QuotaService" as Quotas
+database "PostgreSQL" as DB
+participant "AlertService" as Alerts
+participant "AuditService" as Audit
+
+Pescador -> UI : Pulsa "Cerrar faena"\n(con GPS de desembarco)
+UI -> Jwt : POST /api/v1/faenas/{id}/cerrar\nAuthorization: Bearer <JWT>
+Jwt -> Jwt : Valida firma y rol
+Jwt -> Ctrl : Petición autenticada
+Ctrl -> Trips : close(tripId, request)
+Trips -> DB : Buscar faena
+Trips -> Trips : requireOwnership()\n¿faena abierta?
+Trips -> Rules : requireClosable(capturas, declaraciónNula)
+Rules --> Trips : ok
+
+loop por cada captura sin cuota asignada
+  Trips -> Quotas : consume(especie, zona, fecha, embarcación, kg)
+  Quotas -> DB : SELECT ... FOR UPDATE\n(bloqueo pesimista de la cuota)
+  alt saldo suficiente
+    Quotas -> DB : Actualizar saldo consumido
+    opt cruza el umbral del 80 % o 95 %
+      Quotas ->> Alerts : QuotaThresholdReached (evento)
+      Alerts -> DB : Crear alerta para analistas y armador
+    end
+    Quotas --> Trips : quotaId
+  else cuota agotada
+    Quotas --> Trips : ApiException QUOTA_EXHAUSTED
+    Trips --> Ctrl : 422 · se revierte la transacción
+    Ctrl --> UI : "La captura excede la cuota disponible."
+  end
+end
+
+Trips -> DB : Guardar faena CLOSED\n(closedAt, GPS de desembarco)
+Trips -> Audit : record(TRIP_CLOSED)
+Audit -> DB : Insertar registro de auditoría
+Trips --> Ctrl : TripResponse
+Ctrl --> UI : 200 OK
+UI --> Pescador : "Faena cerrada" y saldo de cuota actualizado
+@enduml

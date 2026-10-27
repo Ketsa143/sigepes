@@ -1,0 +1,52 @@
+@startuml actividad-faena
+!include _estilo.iuml
+title Vista de procesos · Diagrama de actividad: faena de pesca con o sin conexión
+
+|Pescador|
+start
+:Iniciar faena (embarcación, arte, zona);
+|Sistema SIGEPES|
+:Validar embarcación, permiso vigente\ny arte de pesca permitido;
+if (¿Cumple las reglas?) then (no)
+  :Mostrar motivo en español;
+  stop
+else (sí)
+endif
+fork
+  |Pescador|
+  :Registrar capturas;
+  |Sistema SIGEPES|
+  :Validar talla mínima, veda\ny capacidad de cuota;
+fork again
+  |Sistema SIGEPES|
+  :Capturar posición GPS periódica;
+  if (¿Posición dentro de zona restringida?) then (sí)
+    :Crear evento de zona;
+    :Alertar al pescador y a la autoridad;
+  else (no)
+  endif
+end fork
+|Pescador|
+:Cerrar faena con GPS de desembarco;
+|Sistema SIGEPES|
+if (¿Hay conexión?) then (no)
+  :Guardar la faena en el dispositivo\n(cola local);
+  :Mostrar "Sin conexión: la faena quedó\nguardada en este dispositivo";
+  :Esperar a recuperar la señal;
+  :Sincronizar (POST /faenas/sincronizar);
+else (sí)
+endif
+:Descontar cada captura de su cuota\n(bloqueo pesimista);
+if (¿Cuota agotada?) then (sí)
+  :Revertir el cierre y avisar\n"La captura excede la cuota disponible";
+  stop
+else (no)
+endif
+if (¿Consumo ≥ 80 % o 95 %?) then (sí)
+  :Generar alerta de umbral;
+else (no)
+endif
+:Registrar auditoría TRIP_CLOSED;
+:Faena cerrada; capturas disponibles\npara trazar lotes con QR;
+stop
+@enduml
