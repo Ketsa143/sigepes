@@ -94,6 +94,9 @@ public class SecurityConfig {
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/api/**", configuration);
+        // El frontend sondea el health check para su indicador "En línea / Sin conexión" y
+        // necesita leer el código de respuesta (502/503 = sin servicio).
+        source.registerCorsConfiguration("/actuator/health", configuration);
         return source;
     }
 
