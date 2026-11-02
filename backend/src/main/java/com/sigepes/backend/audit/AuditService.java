@@ -48,6 +48,9 @@ public class AuditService {
 
     private static final int MAX_DETAIL = 600;
     private static final int MAX_STATE = 2000;
+    /** Límites del rango de búsqueda cuando no se filtra por fecha (ver AuditLogRepository#search). */
+    private static final Instant SEARCH_FROM = Instant.EPOCH;
+    private static final Instant SEARCH_TO = Instant.parse("9999-12-31T23:59:59Z");
     private static final ObjectMapper JSON = new ObjectMapper();
 
     private final AuditLogRepository repository;
@@ -138,7 +141,8 @@ public class AuditService {
     public List<AuditLogEntity> search(String module, AuditActionType actionType, String actorId, Instant from,
             Instant to, int limit) {
         Limit cap = Limit.of(Math.min(Math.max(limit, 1), 500));
-        return repository.search(blankToNull(module), actionType, blankToNull(actorId), from, to, cap);
+        return repository.search(blankToNull(module), actionType, blankToNull(actorId),
+                from != null ? from : SEARCH_FROM, to != null ? to : SEARCH_TO, cap);
     }
 
     /**

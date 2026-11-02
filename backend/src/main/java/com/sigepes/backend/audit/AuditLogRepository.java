@@ -16,14 +16,18 @@ public interface AuditLogRepository extends JpaRepository<AuditLogEntity, String
 
     long countByAction(String action);
 
-    /** AC-20.4: combina libremente módulo, tipo de acción, actor y rango de fechas. */
+    /**
+     * AC-20.4: combina libremente módulo, tipo de acción, actor y rango de fechas. El rango es
+     * obligatorio: PostgreSQL no puede deducir el tipo de un parámetro de fecha nulo en
+     * {@code :from IS NULL}, así que quien llama pasa límites abiertos en lugar de null.
+     */
     @Query("""
             SELECT a FROM AuditLogEntity a
             WHERE (:module IS NULL OR a.module = :module)
               AND (:actionType IS NULL OR a.actionType = :actionType)
               AND (:actorId IS NULL OR a.actorId = :actorId)
-              AND (:from IS NULL OR a.occurredAt >= :from)
-              AND (:to IS NULL OR a.occurredAt <= :to)
+              AND a.occurredAt >= :from
+              AND a.occurredAt <= :to
             ORDER BY a.occurredAt DESC
             """)
     List<AuditLogEntity> search(@Param("module") String module, @Param("actionType") AuditActionType actionType,
