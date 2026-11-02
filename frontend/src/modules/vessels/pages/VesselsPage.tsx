@@ -1,5 +1,6 @@
 import AddIcon from '@mui/icons-material/Add';
 import DirectionsBoatIcon from '@mui/icons-material/DirectionsBoat';
+import EditNoteIcon from '@mui/icons-material/EditNote';
 import QrCode2Icon from '@mui/icons-material/QrCode2';
 import {
   Alert, Button, Card, CardContent, Checkbox, Chip, CircularProgress, Dialog, DialogActions, DialogContent,
@@ -19,6 +20,15 @@ const EMPTY = { name: '', registration: '', port: '', hullType: '', enginePower:
 const EMPTY_GEAR = { name: '', description: '', destructive: false, status: 'ACTIVE' };
 const GEAR_MANAGER_ROLES = ['ADMIN', 'ANALYST'];
 
+/** AC-02.4: estados de una embarcación. Solo una embarcación activa puede iniciar faenas. */
+const VESSEL_STATUSES = [
+  { value: 'ACTIVE', label: 'Activa', help: 'Puede iniciar faenas.' },
+  { value: 'UNDER_MAINTENANCE', label: 'En mantenimiento', help: 'No puede iniciar faenas mientras esté en reparación.' },
+  { value: 'SUSPENDED', label: 'Suspendida', help: 'Bloqueada temporalmente; no puede iniciar faenas.' },
+  { value: 'DECOMMISSIONED', label: 'Dada de baja', help: 'Fuera de servicio de forma definitiva; no puede iniciar faenas.' },
+];
+const RESTRICTIVE_STATUSES = ['SUSPENDED', 'DECOMMISSIONED'];
+
 export function VesselsPage() {
   const queryClient = useQueryClient();
   const user = useAuthStore((s) => s.user);
@@ -32,6 +42,8 @@ export function VesselsPage() {
   const [qrVessel, setQrVessel] = useState<Vessel | null>(null);
   const [gearDialogOpen, setGearDialogOpen] = useState(false);
   const [gearForm, setGearForm] = useState(EMPTY_GEAR);
+  const [statusVessel, setStatusVessel] = useState<Vessel | null>(null);
+  const [newStatus, setNewStatus] = useState('ACTIVE');
 
   const createMutation = useMutation({
     mutationFn: domainService.createVessel,
@@ -52,10 +64,30 @@ export function VesselsPage() {
     },
   });
 
+  const statusMutation = useMutation({
+    mutationFn: ({ id, status }: { id: string; status: string }) => domainService.updateVessel(id, { status }),
+    onSuccess: async () => {
+      setStatusVessel(null);
+      await queryClient.invalidateQueries({ queryKey: ['vessels'] });
+    },
+  });
+
+  // El backend permite el cambio al dueño de la embarcación y al administrador.
+  const canChangeStatus = (vessel: Vessel) =>
+    !!user && (user.role === 'ADMIN' || ((user.role === 'FISHER' || user.role === 'SHIPOWNER') && vessel.ownerId === user.id));
+
+  const openStatusDialog = (vessel: Vessel) => {
+    statusMutation.reset();
+    setNewStatus(vessel.status);
+    setStatusVessel(vessel);
+  };
+
   const vessels = vesselsQuery.data ?? [];
   const gears = gearsQuery.data ?? [];
   const error = createMutation.error ? toAppError(createMutation.error) : null;
   const gearError = createGearMutation.error ? toAppError(createGearMutation.error) : null;
+  const statusError = statusMutation.error ? toAppError(statusMutation.error) : null;
+  const selectedStatus = VESSEL_STATUSES.find((option) => option.value === newStatus);
 
   const toggleGear = (id: string) =>
     setSelectedGears((current) =>
@@ -106,6 +138,13 @@ export function VesselsPage() {
                   </Stack>
                   <Stack direction="row" spacing={0.5} alignItems="center">
                     <StatusChip status={vessel.status} />
+                    {canChangeStatus(vessel) && (
+                      <Tooltip title="Cambiar estado">
+                        <IconButton size="small" onClick={() => openStatusDialog(vessel)} aria-label={`Cambiar estado de ${vessel.name}`}>
+                          <EditNoteIcon fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
+                    )}
                     <Tooltip title="Ver código QR (identificación para inspección de campo)">
                       <IconButton size="small" onClick={() => setQrVessel(vessel)} aria-label="Ver código QR">
                         <QrCode2Icon fontSize="small" />
@@ -202,6 +241,38 @@ export function VesselsPage() {
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setQrVessel(null)}>Cerrar</Button>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog open={!!statusVessel} onClose={() => setStatusVessel(null)} fullWidth maxWidth="xs">
+        <DialogTitle>Cambiar estado — {statusVessel?.name}</DialogTitle>
+        <DialogContent>
+          {statusError && <Alert severity="error" sx={{ mb: 2 }}>{statusError.message}</Alert>}
+          <Stack spacing={2} sx={{ mt: 1 }}>
+            <TextField select label="Estado" value={newStatus} onChange={(e) => setNewStatus(e.target.value)}>
+              {VESSEL_STATUSES.map((option) => (
+                <MenuItem key={option.value} value={option.value}>{option.label}</MenuItem>
+              ))}
+            </TextField>
+            {selectedStatus && (
+              <Typography variant="body2" color="text.secondary">{selectedStatus.help}</Typography>
+            )}
+            {RESTRICTIVE_STATUSES.includes(newStatus) && newStatus !== statusVessel?.status && (
+              <Alert severity="warning">
+                La embarcación no podrá iniciar faenas hasta que vuelva a estar activa. El cambio queda en la auditoría.
+              </Alert>
+            )}
+          </Stack>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setStatusVessel(null)}>Cancelar</Button>
+          <Button
+            variant="contained"
+            disabled={statusMutation.isPending || !statusVessel || newStatus === statusVessel.status}
+            onClick={() => statusVessel && statusMutation.mutate({ id: statusVessel.id, status: newStatus })}
+          >
+            {statusMutation.isPending ? 'Guardando...' : 'Guardar estado'}
+          </Button>
         </DialogActions>
       </Dialog>
 
