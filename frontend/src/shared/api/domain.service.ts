@@ -558,6 +558,10 @@ export const domainService = {
   }): Promise<Vessel> {
     return (await httpClient.post<Vessel>('/embarcaciones', payload)).data;
   },
+  /** AC-02.4: cambia el estado (y opcionalmente puerto o artes) de una embarcación. */
+  async updateVessel(id: string, payload: { status?: string; port?: string; gears?: string[] }): Promise<Vessel> {
+    return (await httpClient.patch<Vessel>(`/embarcaciones/${id}`, payload)).data;
+  },
   /** AC-02.5: perfil completo de una embarcación (usado por el escaneo QR de campo). */
   async vesselDetail(id: string): Promise<Vessel> {
     return (await httpClient.get<Vessel>(`/embarcaciones/${id}`)).data;
