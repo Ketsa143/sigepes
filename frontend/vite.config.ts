@@ -56,6 +56,8 @@ export default defineConfig({
     port: 5173,
     proxy: {
       '/api': 'http://localhost:8080',
+      // Sondeo de conexión (useOnlineStatus): el health check vive fuera de /api.
+      '/actuator': 'http://localhost:8080',
     },
   },
 });
