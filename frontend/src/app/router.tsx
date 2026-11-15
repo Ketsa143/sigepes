@@ -29,6 +29,7 @@ import { IndicatorsPage } from '../modules/indicators/pages/IndicatorsPage';
 import { DocumentsPage } from '../modules/documents/pages/DocumentsPage';
 import { OfficialReportsPage } from '../modules/statistics/pages/OfficialReportsPage';
 import { PublicLotPage } from '../modules/traceability/pages/PublicLotPage';
+import { PublicMpaPage } from '../modules/mpa/pages/PublicMpaPage';
 import { RmsPage } from '../modules/rms/pages/RmsPage';
 
 export const router = createBrowserRouter([
@@ -40,6 +41,9 @@ export const router = createBrowserRouter([
   // RF-09: el QR de cada lote abre esta verificación pública.
   { path: '/verificar', element: <PublicLotPage /> },
   { path: '/verificar/:code', element: <PublicLotPage /> },
+  // HU-13: capa y ficha pública de las Áreas Marinas Protegidas, sin cuenta.
+  { path: '/areas-protegidas', element: <PublicMpaPage /> },
+  { path: '/areas-protegidas/:id', element: <PublicMpaPage /> },
   {
     element: <ProtectedRoute />,
     children: [

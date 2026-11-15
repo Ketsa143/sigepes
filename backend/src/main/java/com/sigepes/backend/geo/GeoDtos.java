@@ -25,11 +25,14 @@ public final class GeoDtos {
             List<double[]> polygon,
             String resolutionNumber,
             String description,
-            boolean active) {
+            boolean active,
+            String mpaId,
+            String mpaZoneKind) {
 
         public static ZoneResponse from(RestrictedZoneEntity zone) {
             return new ZoneResponse(zone.getId(), zone.getName(), zone.getZoneType().name(),
-                    zone.polygon().vertices(), zone.getResolutionNumber(), zone.getDescription(), zone.isActive());
+                    zone.polygon().vertices(), zone.getResolutionNumber(), zone.getDescription(), zone.isActive(),
+                    zone.getMpaId(), zone.getMpaZoneKind() == null ? null : zone.getMpaZoneKind().name());
         }
     }
 

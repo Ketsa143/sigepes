@@ -155,6 +155,40 @@ export interface RestrictedZone {
   resolutionNumber: string;
   description?: string | null;
   active: boolean;
+  /** HU-13: AMP al que pertenece la zona de manejo (nulo en zonas de RF-04). */
+  mpaId?: string | null;
+  mpaZoneKind?: MpaZoneKind | null;
+}
+
+/** HU-13: zona de manejo dentro de un Área Marina Protegida. */
+export type MpaZoneKind = 'INTANGIBLE' | 'SUSTAINABLE_USE' | 'BUFFER';
+
+export type MpaCategory = 'NATIONAL_PARK' | 'DMI' | 'SANCTUARY' | 'OTHER';
+
+export interface NamedRef {
+  id: string;
+  name: string;
+}
+
+export interface MpaZone {
+  id: string;
+  name: string;
+  kind: MpaZoneKind;
+  polygon: [number, number][];
+  description?: string | null;
+  allowedGears: NamedRef[];
+  allowedSpecies: NamedRef[];
+}
+
+/** HU-13: Área Marina Protegida con su zonificación (consulta pública). */
+export interface MarineProtectedArea {
+  id: string;
+  name: string;
+  category: MpaCategory;
+  legalAct: string;
+  authority?: string | null;
+  description?: string | null;
+  zones: MpaZone[];
 }
 
 /** AC-04.1: posición GPS capturada en el dispositivo. El id lo genera el cliente (idempotencia). */
@@ -777,6 +811,13 @@ export const domainService = {
       if (cached) return cached;
       throw error;
     }
+  },
+  /** HU-13: AMP activos, sin sesión. zoom simplifica la geometría para el mapa (R4). */
+  async marineProtectedAreas(zoom?: number): Promise<MarineProtectedArea[]> {
+    return (await httpClient.get<MarineProtectedArea[]>('/areas-protegidas', { params: zoom == null ? {} : { zoom } })).data;
+  },
+  async marineProtectedArea(id: string): Promise<MarineProtectedArea> {
+    return (await httpClient.get<MarineProtectedArea>(`/areas-protegidas/${encodeURIComponent(id)}`)).data;
   },
   async createZone(payload: {
     name: string;

@@ -74,13 +74,15 @@ public class DemoDataSeeder implements ApplicationRunner {
     private final QuotaRepository quotaRepository;
     private final RestrictedZoneRepository zoneRepository;
     private final IllegalReportRepository reportRepository;
+    private final MpaDemoSeeder mpaDemoSeeder;
 
     public DemoDataSeeder(
             @org.springframework.beans.factory.annotation.Value("${sigepes.seed.enabled:true}") boolean enabled,
             UserRepository userRepository, UserService userService, FishingGearRepository gearRepository,
             VesselRepository vesselRepository, SpeciesRepository speciesRepository,
             ClosureRepository closureRepository, PermitRepository permitRepository, QuotaRepository quotaRepository,
-            RestrictedZoneRepository zoneRepository, IllegalReportRepository reportRepository) {
+            RestrictedZoneRepository zoneRepository, IllegalReportRepository reportRepository,
+            MpaDemoSeeder mpaDemoSeeder) {
         this.enabled = enabled;
         this.userRepository = userRepository;
         this.userService = userService;
@@ -92,6 +94,7 @@ public class DemoDataSeeder implements ApplicationRunner {
         this.quotaRepository = quotaRepository;
         this.zoneRepository = zoneRepository;
         this.reportRepository = reportRepository;
+        this.mpaDemoSeeder = mpaDemoSeeder;
     }
 
     @Override
@@ -103,6 +106,7 @@ public class DemoDataSeeder implements ApplicationRunner {
         }
         if (userRepository.count() > 0) {
             log.info("La base ya tiene datos; se omite la carga DEMO.");
+            mpaDemoSeeder.seedIfMissing();
             return;
         }
 
@@ -171,10 +175,7 @@ public class DemoDataSeeder implements ApplicationRunner {
                 new double[] { 6.05, -77.62 }, new double[] { 6.45, -77.62 }, new double[] { 6.45, -77.44 },
                 new double[] { 6.05, -77.44 }), "AUNAP-0456-2025",
                 "Franja costera frente a Bahía Solano cubierta por la veda del camarón blanco (delimitación de demostración).");
-        zone("DEMO Área Marina Protegida · Ensenada de Utría", ZoneType.MPA, List.of(
-                new double[] { 5.93, -77.40 }, new double[] { 6.08, -77.40 }, new double[] { 6.08, -77.29 },
-                new double[] { 5.98, -77.27 }, new double[] { 5.93, -77.30 }), "MADS-PNN-UTRIA-DEMO",
-                "Polígono aproximado de un área protegida para pruebas; no corresponde a la cartografía oficial.");
+        // HU-13: el AMP de Utría ahora se siembra con su zonificación en MpaDemoSeeder.
 
         // --- Permisos: vigente, vencido y pendiente ----------------------
         permit("PES-0231", "Pesca artesanal", fisher, today.minusMonths(6), today.plusMonths(6),
@@ -195,6 +196,7 @@ public class DemoDataSeeder implements ApplicationRunner {
                 "En el muelle de Bahía Solano se ofrece pargo rojo muy por debajo de la talla mínima.",
                 ReportStatus.INVESTIGATING);
 
+        mpaDemoSeeder.seedIfMissing();
         log.info("Datos DEMO cargados. Usuarios de prueba con contraseña «{}».", DEMO_PASSWORD);
     }
 

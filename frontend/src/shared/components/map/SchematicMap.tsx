@@ -1,8 +1,8 @@
 import { Box, Stack, Typography } from '@mui/material';
 import { useId, useMemo } from 'react';
-import { ZONE_TYPE_LABEL } from '../../geo/geo';
+import { zoneLabel } from '../../geo/geo';
 import { MapLegend } from './MapLegend';
-import { ZONE_STYLE, type GeoMapProps } from './mapStyles';
+import { zoneStyle, type GeoMapProps } from './mapStyles';
 
 const WIDTH = 640;
 
@@ -100,7 +100,7 @@ export function SchematicMap({ zones, track = [], highlightZoneId, height = 360,
         })}
 
         {zones.map((zone) => {
-          const style = ZONE_STYLE[zone.zoneType];
+          const style = zoneStyle(zone);
           const highlighted = zone.id === highlightZoneId;
           return (
             <path
@@ -112,7 +112,7 @@ export function SchematicMap({ zones, track = [], highlightZoneId, height = 360,
               strokeDasharray={zone.active ? undefined : '6 4'}
               opacity={zone.active ? 1 : 0.55}
             >
-              <title>{`${zone.name} · ${ZONE_TYPE_LABEL[zone.zoneType]}`}</title>
+              <title>{`${zone.name} · ${zoneLabel(zone)}`}</title>
             </path>
           );
         })}

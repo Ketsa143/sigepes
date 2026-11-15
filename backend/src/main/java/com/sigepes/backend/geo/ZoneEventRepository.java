@@ -14,4 +14,6 @@ public interface ZoneEventRepository extends JpaRepository<ZoneEventEntity, Stri
     List<ZoneEventEntity> findByOccurredAtBetween(Instant from, Instant to);
 
     long countByStatus(String status);
+
+    boolean existsByTripIdAndZoneIdAndPositionId(String tripId, String zoneId, String positionId);
 }

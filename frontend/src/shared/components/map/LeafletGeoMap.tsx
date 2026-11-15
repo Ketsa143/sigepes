@@ -5,9 +5,9 @@ import type { LatLngBoundsExpression, LatLngExpression } from 'leaflet';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { CircleMarker, MapContainer, Polygon, Polyline, Popup, TileLayer, Tooltip, useMap, useMapEvents } from 'react-leaflet';
 import type { RestrictedZone } from '../../api/domain.service';
-import { ZONE_TYPE_LABEL } from '../../geo/geo';
+import { zoneLabel } from '../../geo/geo';
 import { MapLegend } from './MapLegend';
-import { INTRUSION_COLOR, TRACK_COLOR, TRACK_START_COLOR, ZONE_STYLE, type GeoMapProps, type MapPoint } from './mapStyles';
+import { INTRUSION_COLOR, TRACK_COLOR, TRACK_START_COLOR, zoneStyle, type GeoMapProps, type MapPoint } from './mapStyles';
 
 /** Colombia completa (costas Pacífica y Caribe e islas) cuando no hay nada que encuadrar. */
 const COLOMBIA: LatLngBoundsExpression = [[-4.3, -82.0], [13.6, -66.8]];
@@ -139,7 +139,7 @@ export function LeafletGeoMap({ zones, track = [], highlightZoneId, height = 360
           {picking && <ClickPicker onPick={onPick} />}
 
           {zones.map((zone) => {
-            const style = ZONE_STYLE[zone.zoneType];
+            const style = zoneStyle(zone);
             const highlighted = zone.id === highlightZoneId;
             return (
               <Polygon
@@ -159,7 +159,7 @@ export function LeafletGeoMap({ zones, track = [], highlightZoneId, height = 360
                 <Tooltip sticky>{zone.name}</Tooltip>
                 <Popup>
                   <strong>{zone.name}</strong>
-                  <div>{ZONE_TYPE_LABEL[zone.zoneType]}{zone.active ? '' : ' · inactiva'}</div>
+                  <div>{zoneLabel(zone)}{zone.active ? '' : ' · inactiva'}</div>
                   <div>Resolución: {zone.resolutionNumber}</div>
                   {zone.description && <div style={{ marginTop: 4, color: '#475569' }}>{zone.description}</div>}
                 </Popup>

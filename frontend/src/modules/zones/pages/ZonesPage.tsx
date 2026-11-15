@@ -9,6 +9,7 @@ import {
 } from '@mui/material';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useMemo, useState } from 'react';
+import { Link as RouterLink } from 'react-router-dom';
 import { EmptyState } from '../../../shared/components/EmptyState';
 import { GeoMap } from '../../../shared/components/GeoMap';
 import { PageHeader } from '../../../shared/components/PageHeader';
@@ -16,7 +17,7 @@ import { StatusChip } from '../../../shared/components/StatusChip';
 import { domainService, type RestrictedZone } from '../../../shared/api/domain.service';
 import { toAppError } from '../../../shared/errors/AppError';
 import { useInteractiveMap } from '../../../shared/hooks/useInteractiveMap';
-import { parseVertices, ZONE_TYPE_LABEL } from '../../../shared/geo/geo';
+import { parseVertices, ZONE_TYPE_LABEL, zoneLabel } from '../../../shared/geo/geo';
 import { useAuthStore } from '../../auth/store/authStore';
 import { isAuthority } from '../../auth/types/auth.types';
 
@@ -94,6 +95,14 @@ export function ZonesPage() {
         </Tabs>
       )}
 
+      {zones.some((zone) => zone.mpaId) && (
+        <Alert severity="info" sx={{ mb: 2 }}
+          action={<Button component={RouterLink} to="/areas-protegidas" color="inherit" size="small">Ver fichas</Button>}>
+          Las Áreas Marinas Protegidas tienen zonificación: solo la zona intangible prohíbe toda pesca; en uso
+          sostenible depende del arte declarado en la faena.
+        </Alert>
+      )}
+
       {zonesQuery.isLoading && <CircularProgress size={28} />}
       {zonesQuery.isError && <Alert severity="error">No fue posible cargar las zonas restringidas.</Alert>}
 
@@ -128,7 +137,7 @@ export function ZonesPage() {
                       >
                         <ListItemText
                           primary={zone.name}
-                          secondary={`${ZONE_TYPE_LABEL[zone.zoneType]} · ${zone.resolutionNumber}${zone.active ? '' : ' · inactiva'}`}
+                          secondary={`${zoneLabel(zone)} · ${zone.resolutionNumber}${zone.active ? '' : ' · inactiva'}`}
                           slotProps={{ primary: { fontWeight: 700 } }}
                         />
                       </ListItemButton>
