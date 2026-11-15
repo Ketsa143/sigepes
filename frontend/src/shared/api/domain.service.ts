@@ -88,6 +88,64 @@ export interface Quota {
   notes?: string | null;
 }
 
+/** HU-17: cálculo de RMS en segundo plano. */
+export interface RmsRun {
+  id: string;
+  status: 'PENDING' | 'RUNNING' | 'DONE' | 'FAILED';
+  speciesCount?: number | null;
+  durationMs?: number | null;
+  error?: string | null;
+  createdAt: string;
+  finishedAt?: string | null;
+}
+
+export type StockStatus = 'UNDER_EXPLOITED' | 'FULLY_EXPLOITED' | 'OVER_EXPLOITED';
+
+/** HU-17: resultado del modelo de Schaefer de una especie (desde la caché del servidor). */
+export interface RmsEstimate {
+  speciesId: string;
+  species: string | null;
+  scientificName: string | null;
+  yearsCount: number;
+  firstYear: number;
+  lastYear: number;
+  fitted: boolean;
+  indicative: boolean;
+  r: number | null;
+  kKg: number | null;
+  q: number | null;
+  msyKg: number | null;
+  fMsy: number | null;
+  biomassRatio: number | null;
+  fishingRatio: number | null;
+  r2: number | null;
+  stockStatus: StockStatus | null;
+  note: string | null;
+  computedAt: string;
+  series: { year: number; catchKg: number; effort: number; cpue: number; source: 'FAENAS' | 'HISTORICO' }[];
+  curve: { effort: number; yieldKg: number }[];
+}
+
+export interface RmsProposal {
+  id: string;
+  speciesId: string;
+  species: string | null;
+  proposedKg: number;
+  msyKg: number;
+  indicative: boolean;
+  zone: string;
+  from: string;
+  to: string;
+  justification: string | null;
+  status: 'PROPOSED' | 'APPROVED' | 'REJECTED';
+  proposedBy: string | null;
+  decidedBy: string | null;
+  decisionNote: string | null;
+  quotaId: string | null;
+  createdAt: string;
+  decidedAt: string | null;
+}
+
 /** RF-04: zona restringida (AMP o zona en veda) con su polígono [[lat, lon], ...]. */
 export interface RestrictedZone {
   id: string;
@@ -660,6 +718,33 @@ export const domainService = {
       if (cached) return cached;
       throw error;
     }
+  },
+  // --- Rendimiento Máximo Sostenible (RF-17) ------------------------------
+  async rmsEstimates(): Promise<RmsEstimate[]> {
+    return (await httpClient.get<RmsEstimate[]>('/rms')).data;
+  },
+  async rmsEstimate(speciesId: string): Promise<RmsEstimate> {
+    return (await httpClient.get<RmsEstimate>(`/rms/especies/${encodeURIComponent(speciesId)}`)).data;
+  },
+  async requestRmsRun(): Promise<RmsRun> {
+    return (await httpClient.post<RmsRun>('/rms/calculos')).data;
+  },
+  /** Último cálculo; null si nunca se ha calculado (204). */
+  async latestRmsRun(): Promise<RmsRun | null> {
+    const response = await httpClient.get<RmsRun | ''>('/rms/calculos/ultimo');
+    return response.status === 204 || !response.data ? null : response.data;
+  },
+  async rmsProposals(): Promise<RmsProposal[]> {
+    return (await httpClient.get<RmsProposal[]>('/rms/propuestas')).data;
+  },
+  async proposeRmsQuota(
+    speciesId: string,
+    payload: { proposedKg: number; zone: string; from: string; to: string; justification?: string },
+  ): Promise<RmsProposal> {
+    return (await httpClient.post<RmsProposal>(`/rms/especies/${encodeURIComponent(speciesId)}/propuestas`, payload)).data;
+  },
+  async decideRmsProposal(id: string, decision: 'aprobar' | 'rechazar', note?: string): Promise<RmsProposal> {
+    return (await httpClient.post<RmsProposal>(`/rms/propuestas/${id}/${decision}`, { note: note || undefined })).data;
   },
   async createQuota(payload: {
     speciesId: string;

@@ -3,6 +3,7 @@ import CloseIcon from '@mui/icons-material/Close';
 import InsightsIcon from '@mui/icons-material/Insights';
 import FolderOpenOutlinedIcon from '@mui/icons-material/FolderOpenOutlined';
 import SummarizeOutlinedIcon from '@mui/icons-material/SummarizeOutlined';
+import ShowChartIcon from '@mui/icons-material/ShowChart';
 import CampaignOutlinedIcon from '@mui/icons-material/CampaignOutlined';
 import MarkEmailUnreadOutlinedIcon from '@mui/icons-material/MarkEmailUnreadOutlined';
 import DashboardIcon from '@mui/icons-material/Dashboard';
@@ -67,6 +68,7 @@ const ICONS: Record<string, ReactNode> = {
   insights: <InsightsIcon />,
   folder: <FolderOpenOutlinedIcon />,
   summarize: <SummarizeOutlinedIcon />,
+  trend: <ShowChartIcon />,
   inbox: <MarkEmailUnreadOutlinedIcon />,
 };
 

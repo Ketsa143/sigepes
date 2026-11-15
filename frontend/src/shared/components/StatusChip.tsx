@@ -8,7 +8,7 @@ const toneByStatus: Record<string, Tone> = {
   IN_PROGRESS: 'warning', SUSPENDED: 'warning',
   DRAFT: 'default', INACTIVE: 'default', FINISHED: 'default', CANCELLED: 'default',
   CLOSED: 'error', REJECTED: 'error', BLOCKED: 'error', EXPIRED: 'error', DECOMMISSIONED: 'error',
-  SCHEDULED: 'info', INFO: 'info',
+  SCHEDULED: 'info', INFO: 'info', PROPOSED: 'info',
 };
 
 const labelByStatus: Record<string, string> = {
@@ -17,7 +17,7 @@ const labelByStatus: Record<string, string> = {
   IN_PROGRESS: 'En curso', SUSPENDED: 'Suspendido',
   DRAFT: 'Borrador', INACTIVE: 'Inactivo', FINISHED: 'Finalizada', CANCELLED: 'Anulada',
   CLOSED: 'Cerrada', REJECTED: 'Rechazado', BLOCKED: 'Bloqueado', EXPIRED: 'Vencido', DECOMMISSIONED: 'Dado de baja',
-  SCHEDULED: 'Programada', INFO: 'Informativo',
+  SCHEDULED: 'Programada', INFO: 'Informativo', PROPOSED: 'Propuesta',
 };
 
 export function StatusChip({ status }: { status: string }) {
