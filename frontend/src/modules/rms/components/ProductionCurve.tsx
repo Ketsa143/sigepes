@@ -11,7 +11,7 @@ function niceMax(value: number): number {
   if (value <= 0) return 1;
   const exponent = 10 ** Math.floor(Math.log10(value));
   const fraction = value / exponent;
-  const step = fraction <= 1 ? 1 : fraction <= 2 ? 2 : fraction <= 5 ? 5 : 10;
+  const step = [1, 1.2, 1.5, 2, 2.5, 3, 4, 5, 6, 8, 10].find((candidate) => fraction <= candidate) ?? 10;
   return step * exponent;
 }
 
