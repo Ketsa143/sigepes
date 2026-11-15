@@ -33,4 +33,16 @@ public interface CatchRepository extends JpaRepository<CatchEntity, String> {
             """)
     List<Object[]> landingsOf(@Param("ownerId") String ownerId, @Param("from") LocalDate from,
             @Param("to") LocalDate to);
+
+    /**
+     * HU-17 · TASK-17.1 · Captura total (kg) y esfuerzo (faenas cerradas que la registraron) por
+     * especie y año, solo para años completos (anteriores a {@code beforeYear}).
+     */
+    @Query("""
+            SELECT c.species.id, EXTRACT(YEAR FROM t.tripDate), SUM(c.weightKg), COUNT(DISTINCT t.id)
+            FROM CatchEntity c JOIN c.trip t
+            WHERE t.status = com.sigepes.backend.trips.TripStatus.CLOSED AND t.tripDate < :before
+            GROUP BY c.species.id, EXTRACT(YEAR FROM t.tripDate)
+            """)
+    List<Object[]> yearlyCatchAndEffort(@Param("before") LocalDate before);
 }

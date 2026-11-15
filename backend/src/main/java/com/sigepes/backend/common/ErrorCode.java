@@ -96,6 +96,17 @@ public enum ErrorCode {
     EXPORT_NOT_FOUND(HttpStatus.NOT_FOUND, "La exportación no existe."),
     EXPORT_NOT_READY(HttpStatus.CONFLICT, "La exportación todavía se está generando."),
 
+    // --- Rendimiento Máximo Sostenible (RF-17) -------------------------
+    RMS_RUN_NOT_FOUND(HttpStatus.NOT_FOUND, "El cálculo de RMS no existe."),
+    RMS_ESTIMATE_NOT_FOUND(HttpStatus.NOT_FOUND, "Todavía no hay un cálculo de RMS para esta especie."),
+    RMS_NOT_FITTED(HttpStatus.UNPROCESSABLE_ENTITY,
+            "La especie no tiene datos suficientes para estimar el RMS (mínimo 3 años)."),
+    RMS_PROPOSAL_ABOVE_MSY(HttpStatus.UNPROCESSABLE_ENTITY, "La cuota propuesta no puede superar el RMS."),
+    RMS_JUSTIFICATION_REQUIRED(HttpStatus.UNPROCESSABLE_ENTITY,
+            "El RMS es indicativo (menos de 5 años de datos): aprobar la cuota exige una nota justificativa."),
+    RMS_PROPOSAL_NOT_FOUND(HttpStatus.NOT_FOUND, "La propuesta de cuota no existe."),
+    RMS_PROPOSAL_ALREADY_DECIDED(HttpStatus.CONFLICT, "La propuesta de cuota ya fue decidida."),
+
     // --- Alertas (RF-11) ----------------------------------------------
     ALERT_NOT_FOUND(HttpStatus.NOT_FOUND, "La alerta no existe."),
     ALERT_CRITICAL_PERSISTENT(HttpStatus.UNPROCESSABLE_ENTITY,

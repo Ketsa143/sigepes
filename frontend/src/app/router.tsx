@@ -30,6 +30,7 @@ import { DocumentsPage } from '../modules/documents/pages/DocumentsPage';
 import { OfficialReportsPage } from '../modules/statistics/pages/OfficialReportsPage';
 import { PublicLotPage } from '../modules/traceability/pages/PublicLotPage';
 import { PublicMpaPage } from '../modules/mpa/pages/PublicMpaPage';
+import { RmsPage } from '../modules/rms/pages/RmsPage';
 
 export const router = createBrowserRouter([
   { path: '/', element: <HomePage /> },
@@ -70,6 +71,7 @@ export const router = createBrowserRouter([
           { element: <RoleRoute allow={['INSPECTOR', 'ADMIN']} />, children: [{ path: 'audit', element: <AuditPage /> }] },
           { element: <RoleRoute allow={['INSPECTOR', 'ADMIN']} />, children: [{ path: 'reports', element: <ReportsQueuePage /> }] },
           { element: <RoleRoute allow={['INSPECTOR', 'ANALYST', 'ADMIN']} />, children: [{ path: 'official-reports', element: <OfficialReportsPage /> }] },
+          { element: <RoleRoute allow={['INSPECTOR', 'ANALYST', 'ADMIN']} />, children: [{ path: 'rms', element: <RmsPage /> }] },
           {
             element: <RoleRoute allow={['INSPECTOR', 'ADMIN']} />,
             children: [
