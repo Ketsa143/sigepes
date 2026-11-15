@@ -18,6 +18,7 @@ import com.sigepes.backend.common.ErrorCode;
 import com.sigepes.backend.common.Ids;
 import com.sigepes.backend.gears.FishingGearEntity;
 import com.sigepes.backend.gears.GearService;
+import com.sigepes.backend.geo.ZoneControl;
 import com.sigepes.backend.permits.PermitEntity;
 import com.sigepes.backend.quotas.QuotaService;
 import com.sigepes.backend.rules.ComplianceService;
@@ -49,10 +50,11 @@ public class TripService {
     private final CurrentUser currentUser;
     private final AuditService auditService;
     private final QuotaService quotaService;
+    private final ZoneControl zoneControl;
 
     public TripService(FishingTripRepository repository, VesselService vesselService, SpeciesService speciesService,
             GearService gearService, UserService userService, ComplianceService compliance, CurrentUser currentUser,
-            AuditService auditService, QuotaService quotaService) {
+            AuditService auditService, QuotaService quotaService, ZoneControl zoneControl) {
         this.repository = repository;
         this.vesselService = vesselService;
         this.speciesService = speciesService;
@@ -62,6 +64,7 @@ public class TripService {
         this.currentUser = currentUser;
         this.auditService = auditService;
         this.quotaService = quotaService;
+        this.zoneControl = zoneControl;
     }
 
     /**
@@ -172,6 +175,9 @@ public class TripService {
         auditService.record(AuditActionType.CREATE, "CATCH_ADDED", AuditService.MODULE_TRIPS, "Faena", saved.getId(),
                 "Captura de «" + species.getCommonName() + "»: " + request.weightKg() + " kg, talla "
                         + request.averageSizeCm() + " cm");
+        // HU-13 · TASK-13.2: si la faena está dentro de un AMP que no permite la especie, la captura
+        // queda registrada (es lo que pasó) pero se levanta el evento de control y la alerta crítica.
+        zoneControl.checkCatch(saved, species);
         return TripResponse.from(saved);
     }
 

@@ -3,6 +3,8 @@ package com.sigepes.backend.geo;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.Instant;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -77,6 +79,22 @@ public class RestrictedZoneEntity {
     @Column(name = "updated_at", nullable = false)
     private Instant updatedAt;
 
+    /** HU-13: AMP al que pertenece la zona de manejo; nulo en zonas restringidas de RF-04. */
+    @Column(name = "mpa_id", length = 40)
+    private String mpaId;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "mpa_zone_kind", length = 20)
+    private MpaZoneKind mpaZoneKind;
+
+    /** Ids de artes permitidas separados por coma (solo aplica a uso sostenible). */
+    @Column(name = "allowed_gear_ids", length = 1000)
+    private String allowedGearIds;
+
+    /** Ids de especies permitidas separados por coma (solo aplica a uso sostenible). */
+    @Column(name = "allowed_species_ids", length = 2000)
+    private String allowedSpeciesIds;
+
     @Transient
     private Polygon polygon;
 
@@ -131,6 +149,68 @@ public class RestrictedZoneEntity {
     /** AC-04.5: el prefiltro de caja envolvente ya lo hizo la consulta; aquí va la prueba exacta. */
     public boolean contains(double lat, double lon) {
         return active && polygon().contains(lat, lon);
+    }
+
+    /**
+     * HU-13 · ¿Estar aquí con el arte dado es una intrusión?
+     *
+     * <p>Las zonas restringidas de RF-04 (sin zonificación de AMP) prohíben siempre. En un AMP la
+     * zona intangible prohíbe siempre; la de uso sostenible solo si la faena declaró un arte que no
+     * está en la lista de permitidas; la de amortiguación nunca.
+     */
+    public boolean prohibits(String gearId) {
+        if (mpaZoneKind == null) {
+            return true;
+        }
+        return switch (mpaZoneKind) {
+            case INTANGIBLE -> true;
+            case SUSTAINABLE_USE -> gearId != null && !allowedGearIds().isEmpty()
+                    && !allowedGearIds().contains(gearId);
+            case BUFFER -> false;
+        };
+    }
+
+    /** HU-13 · ¿Se permite capturar la especie dentro de esta zona de manejo? */
+    public boolean allowsSpecies(String speciesId) {
+        if (mpaZoneKind == null) {
+            return true;
+        }
+        return switch (mpaZoneKind) {
+            case INTANGIBLE -> false;
+            case SUSTAINABLE_USE -> allowedSpeciesIds().isEmpty() || allowedSpeciesIds().contains(speciesId);
+            case BUFFER -> true;
+        };
+    }
+
+    public List<String> allowedGearIds() {
+        return split(allowedGearIds);
+    }
+
+    public void setAllowedGearIds(Collection<String> ids) {
+        this.allowedGearIds = join(ids);
+    }
+
+    public List<String> allowedSpeciesIds() {
+        return split(allowedSpeciesIds);
+    }
+
+    public void setAllowedSpeciesIds(Collection<String> ids) {
+        this.allowedSpeciesIds = join(ids);
+    }
+
+    private static List<String> split(String csv) {
+        if (csv == null || csv.isBlank()) {
+            return List.of();
+        }
+        return Arrays.stream(csv.split(",")).map(String::trim).filter(value -> !value.isEmpty()).toList();
+    }
+
+    private static String join(Collection<String> ids) {
+        if (ids == null || ids.isEmpty()) {
+            return null;
+        }
+        return String.join(",", ids.stream().map(String::trim).filter(value -> !value.isEmpty()).distinct()
+                .toList());
     }
 
     private static BigDecimal scale(double value) {
@@ -195,5 +275,25 @@ public class RestrictedZoneEntity {
 
     public void setDemo(boolean demo) {
         this.demo = demo;
+    }
+
+    public String getMpaId() {
+        return mpaId;
+    }
+
+    public void setMpaId(String mpaId) {
+        this.mpaId = mpaId;
+    }
+
+    public MpaZoneKind getMpaZoneKind() {
+        return mpaZoneKind;
+    }
+
+    public void setMpaZoneKind(MpaZoneKind mpaZoneKind) {
+        this.mpaZoneKind = mpaZoneKind;
+    }
+
+    public Instant getUpdatedAt() {
+        return updatedAt;
     }
 }

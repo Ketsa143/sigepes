@@ -19,4 +19,29 @@ public interface RestrictedZoneRepository extends JpaRepository<RestrictedZoneEn
               AND z.minLon <= :lon AND z.maxLon >= :lon
             """)
     List<RestrictedZoneEntity> findActiveCandidates(@Param("lat") BigDecimal lat, @Param("lon") BigDecimal lon);
+
+    /** HU-13: zonas de manejo de un AMP. */
+    List<RestrictedZoneEntity> findByMpaIdOrderByNameAsc(String mpaId);
+
+    /**
+     * HU-13 · R4: zonas de AMP activas cuya caja envolvente se cruza con la vista del mapa. Usa el
+     * mismo índice de caja envolvente que el control punto-en-zona.
+     */
+    @Query("""
+            SELECT z FROM RestrictedZoneEntity z
+            WHERE z.active = TRUE AND z.mpaId IS NOT NULL
+              AND z.maxLat >= :minLat AND z.minLat <= :maxLat
+              AND z.maxLon >= :minLon AND z.minLon <= :maxLon
+            ORDER BY z.name ASC
+            """)
+    List<RestrictedZoneEntity> findActiveMpaZonesInBox(@Param("minLat") BigDecimal minLat,
+            @Param("maxLat") BigDecimal maxLat, @Param("minLon") BigDecimal minLon,
+            @Param("maxLon") BigDecimal maxLon);
+
+    @Query("""
+            SELECT z FROM RestrictedZoneEntity z
+            WHERE z.active = TRUE AND z.mpaId IS NOT NULL
+            ORDER BY z.name ASC
+            """)
+    List<RestrictedZoneEntity> findActiveMpaZones();
 }

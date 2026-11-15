@@ -1,13 +1,11 @@
 package com.sigepes.backend.geo;
 
-import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -47,11 +45,11 @@ public class GeoService {
     private final UserService userService;
     private final CurrentUser currentUser;
     private final AuditService auditService;
-    private final ApplicationEventPublisher events;
+    private final ZoneControl zoneControl;
 
     public GeoService(RestrictedZoneRepository zoneRepository, TripPositionRepository positionRepository,
             ZoneEventRepository eventRepository, TripService tripService, UserService userService,
-            CurrentUser currentUser, AuditService auditService, ApplicationEventPublisher events) {
+            CurrentUser currentUser, AuditService auditService, ZoneControl zoneControl) {
         this.zoneRepository = zoneRepository;
         this.positionRepository = positionRepository;
         this.eventRepository = eventRepository;
@@ -59,7 +57,7 @@ public class GeoService {
         this.userService = userService;
         this.currentUser = currentUser;
         this.auditService = auditService;
-        this.events = events;
+        this.zoneControl = zoneControl;
     }
 
     // ------------------------------------------------------------------
@@ -124,6 +122,8 @@ public class GeoService {
                 .map(TripPositionEntity::getInsideZone)
                 .map(RestrictedZoneEntity::getId)
                 .orElse(null);
+        // HU-13: en uso sostenible la intrusión depende del arte declarado al abrir la faena.
+        String gearId = trip.getGear() == null ? null : trip.getGear().getId();
         List<PositionRequest> ordered = positions.stream()
                 .sorted(Comparator.comparing(
                         (PositionRequest p) -> p.recordedAt() == null ? Instant.MAX : p.recordedAt()))
@@ -137,15 +137,17 @@ public class GeoService {
             TripPositionEntity position = new TripPositionEntity(id, trip, request.latitude(), request.longitude(),
                     request.accuracyMeters(), request.recordedAt() == null ? Instant.now() : request.recordedAt());
 
-            Optional<RestrictedZoneEntity> zone = locate(request.latitude().doubleValue(),
-                    request.longitude().doubleValue());
+            Optional<RestrictedZoneEntity> zone = zoneControl.locate(request.latitude().doubleValue(),
+                    request.longitude().doubleValue(), gearId);
             zone.ifPresent(position::setInsideZone);
             positionRepository.save(position);
             stored++;
 
             String zoneId = zone.map(RestrictedZoneEntity::getId).orElse(null);
             if (zoneId != null && !zoneId.equals(previousZoneId)) {
-                intrusions.add(ZoneEventResponse.from(registerIntrusion(trip, zone.get(), position)));
+                intrusions.add(ZoneEventResponse.from(zoneControl.registerIntrusion(trip, zone.get(), position,
+                        "Ingreso a la zona restringida «" + zone.get().getName() + "» en " + position.getLatitude()
+                                + ", " + position.getLongitude())));
             }
             previousZoneId = zoneId;
         }
@@ -180,26 +182,6 @@ public class GeoService {
         auditService.record(AuditActionType.UPDATE, "ZONE_EVENT_REVIEWED", AuditService.MODULE_GEO,
                 "Evento de zona", event.getId(), "Revisión del ingreso a «" + event.getZone().getName() + "»");
         return ZoneEventResponse.from(eventRepository.save(event));
-    }
-
-    /** Zona restringida activa que contiene el punto, si hay alguna. */
-    Optional<RestrictedZoneEntity> locate(double lat, double lon) {
-        return zoneRepository.findActiveCandidates(BigDecimal.valueOf(lat), BigDecimal.valueOf(lon))
-                .stream()
-                .filter(zone -> zone.contains(lat, lon))
-                .findFirst();
-    }
-
-    private ZoneEventEntity registerIntrusion(FishingTripEntity trip, RestrictedZoneEntity zone,
-            TripPositionEntity position) {
-        ZoneEventEntity event = eventRepository.save(new ZoneEventEntity(Ids.generate("evz"), trip, zone, position));
-        auditService.record(AuditActionType.SECURITY, "ZONE_ENTERED", AuditService.MODULE_GEO, "Faena", trip.getId(),
-                "Ingreso a la zona restringida «" + zone.getName() + "» en " + position.getLatitude() + ", "
-                        + position.getLongitude());
-        events.publishEvent(new RestrictedZoneEntered(event.getId(), trip.getId(), trip.getOwner().getId(),
-                zone.getName(), zone.getZoneType().name(), trip.getVessel().getName(),
-                position.getLatitude().doubleValue(), position.getLongitude().doubleValue()));
-        return event;
     }
 
     private void requireOwner(FishingTripEntity trip) {

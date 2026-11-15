@@ -6,12 +6,12 @@ import {
 } from '@vis.gl/react-google-maps';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { RestrictedZone } from '../../api/domain.service';
-import { ZONE_TYPE_LABEL } from '../../geo/geo';
+import { zoneLabel } from '../../geo/geo';
 import { MapLegend } from './MapLegend';
 import { markTilesUnavailable, useGoogleMapsAuthFailed } from './mapsAuth';
 import { LeafletGeoMap } from './LeafletGeoMap';
 import {
-  INTRUSION_COLOR, TRACK_COLOR, TRACK_START_COLOR, ZONE_STYLE, type GeoMapProps, type MapPoint,
+  INTRUSION_COLOR, TRACK_COLOR, TRACK_START_COLOR, zoneStyle, type GeoMapProps, type MapPoint,
 } from './mapStyles';
 
 /** Colombia completa (costas Pacífica y Caribe e islas) cuando no hay nada que encuadrar. */
@@ -160,7 +160,7 @@ function MapContents({ zones, track = [], highlightZoneId, height = 360, title, 
           </MapControl>
 
           {zones.map((zone) => {
-            const style = ZONE_STYLE[zone.zoneType];
+            const style = zoneStyle(zone);
             const highlighted = zone.id === highlightZoneId;
             return (
               <Polygon
@@ -213,7 +213,7 @@ function MapContents({ zones, track = [], highlightZoneId, height = 360, title, 
           {selected && (
             <InfoWindow position={selected.position} onCloseClick={() => setSelected(null)} headerContent={<strong>{selected.zone.name}</strong>}>
               <Box sx={{ fontSize: 13, lineHeight: 1.5, maxWidth: 260 }}>
-                <div>{ZONE_TYPE_LABEL[selected.zone.zoneType]}{selected.zone.active ? '' : ' · inactiva'}</div>
+                <div>{zoneLabel(selected.zone)}{selected.zone.active ? '' : ' · inactiva'}</div>
                 <div>Resolución: {selected.zone.resolutionNumber}</div>
                 {selected.zone.description && <Box sx={{ mt: 0.5, color: '#475569' }}>{selected.zone.description}</Box>}
               </Box>

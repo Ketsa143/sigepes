@@ -1,4 +1,4 @@
-import type { RestrictedZone } from '../../api/domain.service';
+import type { MpaZoneKind, RestrictedZone } from '../../api/domain.service';
 
 export interface MapPoint {
   id: string;
@@ -31,6 +31,19 @@ export const ZONE_STYLE: Record<RestrictedZone['zoneType'], { fill: string; stro
   MPA: { fill: 'rgba(27, 107, 63, 0.16)', stroke: '#1FA35A', fillOpacity: 0.28 },
   OTHER: { fill: 'rgba(61, 110, 146, 0.16)', stroke: '#3D8FD1', fillOpacity: 0.26 },
 };
+
+type ZoneStyle = { fill: string; stroke: string; fillOpacity: number };
+
+/** HU-13: dentro de un AMP el color dice qué se puede hacer: rojo intangible, verde uso, gris amortiguación. */
+export const MPA_KIND_STYLE: Record<MpaZoneKind, ZoneStyle> = {
+  INTANGIBLE: { fill: 'rgba(179, 38, 30, 0.16)', stroke: '#C62828', fillOpacity: 0.3 },
+  SUSTAINABLE_USE: { fill: 'rgba(27, 107, 63, 0.16)', stroke: '#1FA35A', fillOpacity: 0.26 },
+  BUFFER: { fill: 'rgba(96, 112, 128, 0.12)', stroke: '#7A8A99', fillOpacity: 0.18 },
+};
+
+export function zoneStyle(zone: RestrictedZone): ZoneStyle {
+  return zone.mpaZoneKind ? MPA_KIND_STYLE[zone.mpaZoneKind] : ZONE_STYLE[zone.zoneType];
+}
 
 export const TRACK_COLOR = '#0B3B5C';
 export const TRACK_START_COLOR = '#0E7C86';
