@@ -71,6 +71,8 @@ public enum ErrorCode {
     // --- Geolocalización (RF-04) ---------------------------------------
     ZONE_NOT_FOUND(HttpStatus.NOT_FOUND, "La zona restringida no existe."),
     INVALID_ZONE_POLYGON(HttpStatus.BAD_REQUEST, "El polígono de la zona no es válido."),
+    MPA_NOT_FOUND(HttpStatus.NOT_FOUND, "El área marina protegida no existe."),
+    MPA_ALREADY_REGISTERED(HttpStatus.CONFLICT, "Ya existe un área marina protegida con ese nombre."),
 
     // --- Denuncias (RF-10) --------------------------------------------
     REPORT_NOT_FOUND(HttpStatus.NOT_FOUND, "La denuncia no existe."),

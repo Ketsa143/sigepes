@@ -1,5 +1,6 @@
 package com.sigepes.backend.geo;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import com.sigepes.backend.common.ApiException;
@@ -64,6 +65,74 @@ public record Polygon(List<double[]> vertices) {
             }
         }
         return inside;
+    }
+
+    /**
+     * HU-13 · R4 · Simplificación Douglas–Peucker para pintar el mapa: descarta los vértices que se
+     * apartan menos de {@code tolerance} grados de la línea que los rodea. Nunca baja de 3 vértices;
+     * si no puede simplificar devuelve el mismo polígono.
+     */
+    public Polygon simplified(double tolerance) {
+        int n = vertices.size();
+        if (tolerance <= 0 || n <= 4) {
+            return this;
+        }
+        // Un anillo cerrado se parte en dos líneas: del primer vértice al más lejano y de vuelta.
+        int far = 0;
+        double best = -1;
+        double[] origin = vertices.get(0);
+        for (int i = 1; i < n; i++) {
+            double[] v = vertices.get(i);
+            double d = Math.hypot(v[0] - origin[0], v[1] - origin[1]);
+            if (d > best) {
+                best = d;
+                far = i;
+            }
+        }
+        List<double[]> first = new ArrayList<>(vertices.subList(0, far + 1));
+        List<double[]> second = new ArrayList<>(vertices.subList(far, n));
+        second.add(origin);
+
+        List<double[]> result = new ArrayList<>(douglasPeucker(first, tolerance));
+        List<double[]> back = douglasPeucker(second, tolerance);
+        result.addAll(back.subList(1, back.size() - 1));
+        return result.size() >= 3 && result.size() < n ? new Polygon(List.copyOf(result)) : this;
+    }
+
+    private static List<double[]> douglasPeucker(List<double[]> line, double tolerance) {
+        if (line.size() <= 2) {
+            return line;
+        }
+        double[] start = line.get(0);
+        double[] end = line.get(line.size() - 1);
+        int index = 0;
+        double max = 0;
+        for (int i = 1; i < line.size() - 1; i++) {
+            double d = distanceToSegment(line.get(i), start, end);
+            if (d > max) {
+                max = d;
+                index = i;
+            }
+        }
+        if (max <= tolerance) {
+            return List.of(start, end);
+        }
+        List<double[]> left = douglasPeucker(line.subList(0, index + 1), tolerance);
+        List<double[]> right = douglasPeucker(line.subList(index, line.size()), tolerance);
+        List<double[]> merged = new ArrayList<>(left.subList(0, left.size() - 1));
+        merged.addAll(right);
+        return merged;
+    }
+
+    private static double distanceToSegment(double[] p, double[] a, double[] b) {
+        double dx = b[0] - a[0];
+        double dy = b[1] - a[1];
+        double lengthSq = dx * dx + dy * dy;
+        if (lengthSq == 0) {
+            return Math.hypot(p[0] - a[0], p[1] - a[1]);
+        }
+        double t = Math.max(0, Math.min(1, ((p[0] - a[0]) * dx + (p[1] - a[1]) * dy) / lengthSq));
+        return Math.hypot(p[0] - (a[0] + t * dx), p[1] - (a[1] + t * dy));
     }
 
     /** ¿Algún par de lados no adyacentes se cruza? (n es pequeño: O(n²) basta). */
