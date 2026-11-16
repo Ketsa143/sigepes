@@ -1216,6 +1216,21 @@ export const domainService = {
   async marineProtectedAreas(zoom?: number): Promise<MarineProtectedArea[]> {
     return (await httpClient.get<MarineProtectedArea[]>('/areas-protegidas', { params: zoom == null ? {} : { zoom } })).data;
   },
+  /**
+   * La consulta pública se cachea 5 minutos en el navegador (R4). Quien registra áreas necesita ver sus
+   * cambios al instante: un parámetro distinto en cada llamada evita la copia cacheada.
+   */
+  async marineProtectedAreasFresh(): Promise<MarineProtectedArea[]> {
+    return (await httpClient.get<MarineProtectedArea[]>('/areas-protegidas', { params: { _: Date.now() } })).data;
+  },
+  /** HU-13 · AC-13.1: el ADMIN registra el área. */
+  async createMpa(payload: { name: string; category: MpaCategory; legalAct: string; authority?: string; description?: string }): Promise<MarineProtectedArea> {
+    return (await httpClient.post<MarineProtectedArea>('/areas-protegidas', payload)).data;
+  },
+  /** HU-13 · AC-13.2: zona de manejo con su polígono y, en uso sostenible, artes y especies permitidas. */
+  async addMpaZone(id: string, payload: { name: string; kind: MpaZoneKind; polygon: [number, number][]; description?: string; allowedGearIds: string[]; allowedSpeciesIds: string[] }): Promise<MarineProtectedArea> {
+    return (await httpClient.post<MarineProtectedArea>(`/areas-protegidas/${encodeURIComponent(id)}/zonas`, payload)).data;
+  },
   async marineProtectedArea(id: string): Promise<MarineProtectedArea> {
     return (await httpClient.get<MarineProtectedArea>(`/areas-protegidas/${encodeURIComponent(id)}`)).data;
   },
