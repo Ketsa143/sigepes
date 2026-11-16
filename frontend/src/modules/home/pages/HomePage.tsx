@@ -9,6 +9,7 @@ import GavelIcon from '@mui/icons-material/Gavel';
 import MenuBookIcon from '@mui/icons-material/MenuBook';
 import MenuIcon from '@mui/icons-material/Menu';
 import CampaignOutlinedIcon from '@mui/icons-material/CampaignOutlined';
+import ParkIcon from '@mui/icons-material/Park';
 import PhoneIcon from '@mui/icons-material/Phone';
 import PublicIcon from '@mui/icons-material/Public';
 import QrCode2Icon from '@mui/icons-material/QrCode2';
@@ -43,6 +44,8 @@ const QUICK_ACCESS = [
   { label: 'Permisos de pesca', description: 'Solicita y consulta tu licencia', icon: <GavelIcon />, to: '/app/permits' },
   { label: 'Verificar un lote', description: 'Origen legal por código QR', icon: <QrCode2Icon />, to: '/verificar' },
   { label: 'Vedas vigentes', description: 'Zonas y periodos restringidos', icon: <BlockIcon />, to: '/app/closures' },
+  // HU-13 · AC-13.4: las AMP y sus reglas se consultan sin iniciar sesión.
+  { label: 'Áreas Marinas Protegidas', description: 'Dónde y cómo se puede pescar', icon: <ParkIcon />, to: '/areas-protegidas' },
   { label: 'Denunciar pesca ilegal', description: 'Anónimo y sin cuenta', icon: <CampaignOutlinedIcon />, to: '/denunciar' },
 ];
 

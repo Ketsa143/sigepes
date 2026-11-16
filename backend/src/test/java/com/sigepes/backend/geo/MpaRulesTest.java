@@ -241,6 +241,15 @@ class MpaRulesTest extends ApiTestSupport {
                         .formatted(name, kind, polygon, json(gearIds), json(speciesIds))));
     }
 
+    @Test
+    @DisplayName("Revisión · Un bbox con NaN, infinito o fuera de rango responde 400, no 500")
+    void invalidBboxIsBadRequest() throws Exception {
+        for (String bbox : List.of("NaN,-78,7,-77", "5,-Infinity,7,-77", "-95,-78,7,-77")) {
+            mockMvc.perform(get("/api/v1/areas-protegidas").param("bbox", bbox))
+                    .andExpect(status().isBadRequest());
+        }
+    }
+
     private String startTrip(String gearId) throws Exception {
         String response = mockMvc.perform(post("/api/v1/faenas").header("Authorization", fisherToken)
                 .contentType(MediaType.APPLICATION_JSON)

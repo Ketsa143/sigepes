@@ -104,10 +104,26 @@ class RmsJobRunner {
             SchaeferModel.Fit fit = SchaeferModel.fit(usable);
             boolean finite = Double.isFinite(fit.r()) && Double.isFinite(fit.k()) && Double.isFinite(fit.q())
                     && Double.isFinite(fit.msy()) && Double.isFinite(fit.fMsy()) && fit.q() > 0;
-            return finite ? fit : null;
+            return finite && fitsColumns(fit) ? fit : null;
         } catch (RuntimeException e) {
             return null;
         }
+    }
+
+    /**
+     * Un ajuste degenerado (por ejemplo, una biomasa que colapsa en el último año) da razones de
+     * pesca de millones que no caben en {@code rms_estimates}. Si uno solo de esos valores desborda
+     * su columna, la base rechaza la escritura y el cálculo de todas las especies falla; por eso se
+     * trata como un ajuste no estable de esa especie.
+     */
+    static boolean fitsColumns(SchaeferModel.Fit fit) {
+        return within(fit.r(), 1e6) && within(fit.k(), 1e16) && within(fit.q(), 1e8) && within(fit.msy(), 1e14)
+                && within(fit.fMsy(), 1e14) && within(fit.biomassRatio(), 1e6) && within(fit.fishingRatio(), 1e6)
+                && within(fit.r2(), 100);
+    }
+
+    private static boolean within(double value, double limit) {
+        return Double.isFinite(value) && value >= 0 && value < limit;
     }
 
     private static String toJson(List<RmsSeries.Point> points) {

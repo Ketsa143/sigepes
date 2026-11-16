@@ -31,6 +31,7 @@ class RmsConfig {
     @Order(10)
     void resumePending(ApplicationReadyEvent event) {
         RmsService service = event.getApplicationContext().getBean(RmsService.class);
+        service.failInterrupted();
         TaskExecutor executor = event.getApplicationContext().getBean("rmsExecutor", TaskExecutor.class);
         executor.execute(service::runPending);
     }
