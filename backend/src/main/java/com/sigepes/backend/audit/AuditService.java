@@ -48,6 +48,7 @@ public class AuditService {
     public static final String MODULE_RMS = "rms";
     public static final String MODULE_ENVIRONMENT = "ambiental";
     public static final String MODULE_INSPECTIONS = "inspecciones";
+    public static final String MODULE_SANCTIONS = "sancionatorios";
 
     private static final int MAX_DETAIL = 600;
     private static final int MAX_STATE = 2000;

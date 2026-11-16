@@ -13,7 +13,8 @@ import { GeoMap } from '../../../shared/components/GeoMap';
 import { PageHeader } from '../../../shared/components/PageHeader';
 import { domainService, type ReportStatus, type ReportSummary } from '../../../shared/api/domain.service';
 import { toAppError } from '../../../shared/errors/AppError';
-import { NEXT_STATUSES, REPORT_STATUS_COLOR, REPORT_STATUS_LABEL, REPORT_TYPE_LABEL } from '../reportLabels';
+import { NEXT_STATUSES, REPORT_STATUS_COLOR, REPORT_STATUS_LABEL, REPORT_TYPE_LABEL } from '../reportLabels';import { OpenSanctionDialog } from '../../sanctions/components/OpenSanctionDialog';
+
 
 const date = new Intl.DateTimeFormat('es-CO', { dateStyle: 'medium' });
 const dateTime = new Intl.DateTimeFormat('es-CO', { dateStyle: 'medium', timeStyle: 'short' });
@@ -87,6 +88,7 @@ function ReportDialog({ reportId, onClose }: { reportId: string; onClose: () => 
   const report = detail.data;
   const options = report ? NEXT_STATUSES[report.status] : [];
   const hasPoint = report?.latitude != null && report?.longitude != null;
+  const [opening, setOpening] = useState(false);
 
   return (
     <Dialog open onClose={onClose} fullWidth maxWidth="md" aria-labelledby="report-dialog-title">
@@ -175,6 +177,9 @@ function ReportDialog({ reportId, onClose }: { reportId: string; onClose: () => 
         </Box>
       )}
       <DialogActions sx={{ px: 3, py: 2 }}>
+        {report?.status === 'CLOSED_FOUNDED' && (
+          <Button color="error" onClick={() => setOpening(true)} sx={{ mr: 'auto' }}>Abrir proceso sancionatorio</Button>
+        )}
         <Button onClick={onClose}>Cerrar</Button>
         {report && options.length > 0 && (
           <Button variant="contained" onClick={() => change.mutate()} disabled={!next || note.trim().length < 5 || change.isPending}>
@@ -182,6 +187,9 @@ function ReportDialog({ reportId, onClose }: { reportId: string; onClose: () => 
           </Button>
         )}
       </DialogActions>
+      {opening && report && (
+        <OpenSanctionDialog reportId={report.id} origin={`la denuncia ${report.trackingCode}`} onClose={() => setOpening(false)} />
+      )}
     </Dialog>
   );
 }

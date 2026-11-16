@@ -8,6 +8,7 @@ import org.springframework.stereotype.Component;
 import com.sigepes.backend.environment.EnvironmentalAnomaly;
 import com.sigepes.backend.geo.RestrictedZoneEntered;
 import com.sigepes.backend.inspections.InspectionSigned;
+import com.sigepes.backend.sanctions.SanctionStageChanged;
 import com.sigepes.backend.quotas.QuotaThresholdReached;
 import com.sigepes.backend.reports.ReportSubmitted;
 import com.sigepes.backend.users.Role;
@@ -93,6 +94,19 @@ public class AlertEventListener {
                         + (findings ? " con " + event.findings() + " hallazgo(s). Puedes consultarla y descargarla."
                                 : " sin hallazgos."),
                 "/app/inspections/" + event.inspectionId(), "inspection:" + event.inspectionId());
+    }
+
+    /**
+     * HU-23 · AC-23.3 · Cada cambio de etapa se notifica al investigado. La clave incluye la etapa y el
+     * plazo: dos actuaciones distintas nunca se fusionan en una sola alerta.
+     */
+    @EventListener
+    public void onSanctionStage(SanctionStageChanged event) {
+        alerts.notify(event.investigatedId(), AlertType.SANCTION, AlertSeverity.WARNING,
+                "Proceso " + event.number() + ": " + event.stageLabel(), event.message(),
+                "/app/sanctions/" + event.processId(),
+                "sanction:" + event.processId() + ":" + event.stageLabel() + ":" + event.deadline() + ":"
+                        + Integer.toHexString(event.message().hashCode()));
     }
 
     /** AC-11.1 · Denuncia nueva para la bandeja de inspección. Sin datos del denunciante (RN-20). */

@@ -6,6 +6,7 @@ import SummarizeOutlinedIcon from '@mui/icons-material/SummarizeOutlined';
 import ShowChartIcon from '@mui/icons-material/ShowChart';
 import WavesIcon from '@mui/icons-material/Waves';
 import FactCheckOutlinedIcon from '@mui/icons-material/FactCheckOutlined';
+import BalanceIcon from '@mui/icons-material/Balance';
 import CampaignOutlinedIcon from '@mui/icons-material/CampaignOutlined';
 import MarkEmailUnreadOutlinedIcon from '@mui/icons-material/MarkEmailUnreadOutlined';
 import DashboardIcon from '@mui/icons-material/Dashboard';
@@ -74,6 +75,7 @@ const ICONS: Record<string, ReactNode> = {
   trend: <ShowChartIcon />,
   waves: <WavesIcon />,
   fact: <FactCheckOutlinedIcon />,
+  balance: <BalanceIcon />,
   inbox: <MarkEmailUnreadOutlinedIcon />,
 };
 

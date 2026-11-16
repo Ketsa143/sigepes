@@ -36,6 +36,8 @@ import { InspectionsPage } from '../modules/inspections/pages/InspectionsPage';
 import { NewInspectionPage } from '../modules/inspections/pages/NewInspectionPage';
 import { InspectionDetailPage } from '../modules/inspections/pages/InspectionDetailPage';
 import { PublicInspectionPage } from '../modules/inspections/pages/PublicInspectionPage';
+import { SanctionsPage } from '../modules/sanctions/pages/SanctionsPage';
+import { SanctionDetailPage } from '../modules/sanctions/pages/SanctionDetailPage';
 
 export const router = createBrowserRouter([
   { path: '/', element: <HomePage /> },
@@ -84,6 +86,8 @@ export const router = createBrowserRouter([
           { path: 'inspections', element: <InspectionsPage /> },
           { element: <RoleRoute allow={['INSPECTOR', 'ADMIN']} />, children: [{ path: 'inspections/new', element: <NewInspectionPage /> }] },
           { path: 'inspections/:id', element: <InspectionDetailPage /> },
+          { path: 'sanctions', element: <SanctionsPage /> },
+          { path: 'sanctions/:id', element: <SanctionDetailPage /> },
           {
             element: <RoleRoute allow={['INSPECTOR', 'ADMIN']} />,
             children: [
