@@ -9,6 +9,7 @@ export const ALERT_TYPE_LABEL: Record<AlertType, string> = {
   SECURITY: 'Seguridad',
   DOCUMENT: 'Documento',
   EXPORT: 'Reporte oficial',
+  ENVIRONMENT: 'Ambiental',
 };
 
 /** AC-11.2 · Informativa / Atención / Crítica. */

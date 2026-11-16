@@ -8,6 +8,7 @@ import GavelIcon from '@mui/icons-material/Gavel';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import NotificationsNoneIcon from '@mui/icons-material/NotificationsNone';
 import ShieldOutlinedIcon from '@mui/icons-material/ShieldOutlined';
+import WavesIcon from '@mui/icons-material/Waves';
 import SummarizeOutlinedIcon from '@mui/icons-material/SummarizeOutlined';
 import WrongLocationIcon from '@mui/icons-material/WrongLocation';
 import {
@@ -33,6 +34,7 @@ const ICON_BY_TYPE: Record<AlertType, ReactNode> = {
   SECURITY: <ShieldOutlinedIcon />,
   DOCUMENT: <DescriptionOutlinedIcon />,
   EXPORT: <SummarizeOutlinedIcon />,
+  ENVIRONMENT: <WavesIcon />,
 };
 
 const AVATAR_COLOR = { INFO: 'info.main', WARNING: 'warning.main', CRITICAL: 'error.main' } as const;

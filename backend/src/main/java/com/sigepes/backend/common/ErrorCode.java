@@ -74,6 +74,9 @@ public enum ErrorCode {
     MPA_NOT_FOUND(HttpStatus.NOT_FOUND, "El área marina protegida no existe."),
     MPA_ALREADY_REGISTERED(HttpStatus.CONFLICT, "Ya existe un área marina protegida con ese nombre."),
 
+    // --- Datos ambientales (RF-14) -------------------------------------
+    ENV_ZONE_NOT_FOUND(HttpStatus.NOT_FOUND, "La zona de pesca no existe."),
+
     // --- Denuncias (RF-10) --------------------------------------------
     REPORT_NOT_FOUND(HttpStatus.NOT_FOUND, "La denuncia no existe."),
     INVALID_REPORT_TRANSITION(HttpStatus.UNPROCESSABLE_ENTITY,

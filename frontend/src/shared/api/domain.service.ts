@@ -589,7 +589,7 @@ export interface PublicLot {
   chain: ChainEvent[];
 }
 
-export type AlertType = 'CLOSURE' | 'QUOTA' | 'PERMIT' | 'ZONE' | 'REPORT' | 'SECURITY' | 'DOCUMENT' | 'EXPORT';
+export type AlertType = 'CLOSURE' | 'QUOTA' | 'PERMIT' | 'ZONE' | 'REPORT' | 'SECURITY' | 'DOCUMENT' | 'EXPORT' | 'ENVIRONMENT';
 export type AlertSeverity = 'INFO' | 'WARNING' | 'CRITICAL';
 
 export interface AppAlert {
@@ -631,6 +631,60 @@ function indicatorParams(filters: IndicatorFilters) {
     region: filters.region || undefined,
     especieId: filters.speciesId || undefined,
   };
+}
+
+/** HU-14: lectura ambiental de una zona de pesca. */
+export interface EnvReading {
+  observedAt: string;
+  sstC: number | null;
+  chlorophyllMgM3: number | null;
+  waveHeightM: number | null;
+  /** Diferencia con la temperatura de referencia de la zona (°C). */
+  anomalyC: number | null;
+  source: string;
+}
+
+export interface EnvZone {
+  id: string;
+  name: string;
+  region: 'PACIFICO' | 'CARIBE' | 'INSULAR';
+  latitude: number;
+  longitude: number;
+  sstBaselineC: number | null;
+  latest: EnvReading | null;
+  /** Horas desde la última lectura guardada (AC-14.5). */
+  ageHours: number | null;
+  stale: boolean;
+  sstAlert: boolean;
+  waveAlert: boolean;
+  /** AC-14.5: última clorofila guardada si la lectura más reciente no la trae. */
+  lastChlorophyll: { value: number; observedAt: string; ageHours: number } | null;
+}
+
+export interface EnvSourceStatus {
+  name: string;
+  available: boolean;
+  lastSuccessAt: string | null;
+  lastFailureAt: string | null;
+  lastError: string | null;
+}
+
+export interface EnvOverview {
+  zones: EnvZone[];
+  sources: EnvSourceStatus[];
+  lastImportAt: string | null;
+  sstThresholdC: number;
+  waveThresholdM: number;
+}
+
+export interface EnvSeries {
+  zone: EnvZone;
+  from: string;
+  to: string;
+  readings: EnvReading[];
+  speciesId: string | null;
+  species: string | null;
+  catches: { date: string; weightKg: number }[];
 }
 
 export const domainService = {
@@ -752,6 +806,18 @@ export const domainService = {
       if (cached) return cached;
       throw error;
     }
+  },
+  // --- Datos ambientales (RF-14) -------------------------------------------
+  async environmentOverview(): Promise<EnvOverview> {
+    return (await httpClient.get<EnvOverview>('/ambiental/zonas')).data;
+  },
+  async environmentSeries(zoneId: string, from: string, to: string, speciesId?: string): Promise<EnvSeries> {
+    return (await httpClient.get<EnvSeries>(`/ambiental/zonas/${encodeURIComponent(zoneId)}/serie`, {
+      params: { desde: from, hasta: to, especieId: speciesId || undefined },
+    })).data;
+  },
+  async importEnvironment(): Promise<{ readingsStored: number; anomalies: number; sources: EnvSourceStatus[] }> {
+    return (await httpClient.post('/ambiental/importaciones')).data;
   },
   // --- Rendimiento Máximo Sostenible (RF-17) ------------------------------
   async rmsEstimates(): Promise<RmsEstimate[]> {

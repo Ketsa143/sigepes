@@ -9,5 +9,7 @@ public enum AlertType {
     REPORT,
     SECURITY,
     DOCUMENT,
-    EXPORT
+    EXPORT,
+    /** HU-14 · AC-14.3: anomalía térmica u oleaje fuerte en una zona de pesca. */
+    ENVIRONMENT
 }
