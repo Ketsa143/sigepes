@@ -7,6 +7,7 @@ import org.springframework.stereotype.Component;
 
 import com.sigepes.backend.environment.EnvironmentalAnomaly;
 import com.sigepes.backend.geo.RestrictedZoneEntered;
+import com.sigepes.backend.inspections.InspectionSigned;
 import com.sigepes.backend.quotas.QuotaThresholdReached;
 import com.sigepes.backend.reports.ReportSubmitted;
 import com.sigepes.backend.users.Role;
@@ -80,6 +81,18 @@ public class AlertEventListener {
                         + " m). Considera avisar a la flota artesanal.";
         alerts.notifyRoles(QUOTA_AUDIENCE, AlertType.ENVIRONMENT, AlertSeverity.WARNING, title, message,
                 "/app/environment", "env:" + event.zoneId() + ":" + event.kind() + ":" + event.day());
+    }
+
+    /** HU-22 · El armador recibe el acta que le levantaron, con o sin hallazgos. */
+    @EventListener
+    public void onInspection(InspectionSigned event) {
+        boolean findings = event.findings() > 0;
+        alerts.notify(event.ownerId(), AlertType.INSPECTION, findings ? AlertSeverity.WARNING : AlertSeverity.INFO,
+                findings ? "Acta con hallazgos: " + event.vesselName() : "Inspección conforme: " + event.vesselName(),
+                "Se levantó el acta " + event.code() + " a la embarcación " + event.vesselName()
+                        + (findings ? " con " + event.findings() + " hallazgo(s). Puedes consultarla y descargarla."
+                                : " sin hallazgos."),
+                "/app/inspections/" + event.inspectionId(), "inspection:" + event.inspectionId());
     }
 
     /** AC-11.1 · Denuncia nueva para la bandeja de inspección. Sin datos del denunciante (RN-20). */

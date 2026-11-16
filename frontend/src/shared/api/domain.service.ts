@@ -589,7 +589,7 @@ export interface PublicLot {
   chain: ChainEvent[];
 }
 
-export type AlertType = 'CLOSURE' | 'QUOTA' | 'PERMIT' | 'ZONE' | 'REPORT' | 'SECURITY' | 'DOCUMENT' | 'EXPORT' | 'ENVIRONMENT';
+export type AlertType = 'CLOSURE' | 'QUOTA' | 'PERMIT' | 'ZONE' | 'REPORT' | 'SECURITY' | 'DOCUMENT' | 'EXPORT' | 'ENVIRONMENT' | 'INSPECTION';
 export type AlertSeverity = 'INFO' | 'WARNING' | 'CRITICAL';
 
 export interface AppAlert {
@@ -685,6 +685,80 @@ export interface EnvSeries {
   speciesId: string | null;
   species: string | null;
   catches: { date: string; weightKg: number }[];
+}
+
+/** HU-22: acta de inspección tal como se arma y firma en el teléfono. */
+export interface InspectionInput {
+  clientId: string;
+  vesselId: string;
+  inspectedAt: string;
+  latitude?: number | null;
+  longitude?: number | null;
+  locationText: string;
+  catches: { speciesId: string; sizeCm: number; weightKg?: number | null; quantity?: number | null }[];
+  gearIds: string[];
+  otherFindings: string[];
+  observations?: string;
+  responsibleName: string;
+  responsibleIdNumber?: string;
+  /** Firmas dibujadas en pantalla (data URL PNG). */
+  inspectorSignature: string;
+  responsibleSignature: string;
+  savedOffline: boolean;
+}
+
+export type FindingCode = 'SIZE_BELOW_MIN' | 'PROHIBITED_GEAR' | 'UNREGISTERED_GEAR' | 'NO_VALID_PERMIT' | 'VESSEL_NOT_ACTIVE' | 'OTHER';
+
+export interface Inspection {
+  id: string;
+  code: string;
+  clientId: string;
+  vesselId: string;
+  vesselName: string;
+  vesselRegistration: string;
+  ownerName: string;
+  inspectorName: string;
+  permitNumber: string | null;
+  latitude: number | null;
+  longitude: number | null;
+  locationText: string;
+  inspectedAt: string;
+  result: 'COMPLIANT' | 'WITH_FINDINGS';
+  observations: string | null;
+  responsibleName: string;
+  items: {
+    kind: 'CATCH' | 'GEAR'; speciesId: string | null; gearId: string | null; label: string;
+    sizeCm: number | null; minSizeCm: number | null; weightKg: number | null; quantity: number | null; finding: boolean;
+  }[];
+  findings: { id: string; code: FindingCode; label: string; description: string; automatic: boolean }[];
+  photos: number;
+  contentHash: string;
+  savedOffline: boolean;
+  receivedAt: string;
+}
+
+export interface InspectionSummary {
+  id: string;
+  code: string;
+  vesselName: string;
+  vesselRegistration: string;
+  inspectorName: string;
+  locationText: string;
+  inspectedAt: string;
+  result: Inspection['result'];
+  findings: number;
+  savedOffline: boolean;
+}
+
+export interface PublicInspection {
+  code: string;
+  vesselName: string;
+  vesselRegistration: string;
+  inspectedAt: string;
+  locationText: string;
+  result: Inspection['result'];
+  findings: string[];
+  integrityOk: boolean;
 }
 
 export const domainService = {
@@ -806,6 +880,26 @@ export const domainService = {
       if (cached) return cached;
       throw error;
     }
+  },
+  // --- Inspecciones en campo (HU-22) ---------------------------------------
+  /** 201 si el acta es nueva, 200 si ya había llegado (reenvío idempotente por clientId). */
+  async submitInspection(payload: InspectionInput, photos: Blob[]): Promise<Inspection> {
+    const form = new FormData();
+    form.append('request', new Blob([JSON.stringify(payload)], { type: 'application/json' }));
+    photos.forEach((photo, index) => form.append('photos', photo, `foto-${index + 1}.jpg`));
+    return (await httpClient.post<Inspection>('/inspecciones', form, { headers: { 'Content-Type': 'multipart/form-data' } })).data;
+  },
+  async inspections(vesselId?: string): Promise<InspectionSummary[]> {
+    return (await httpClient.get<InspectionSummary[]>('/inspecciones', { params: vesselId ? { embarcacionId: vesselId } : undefined })).data;
+  },
+  async inspection(id: string): Promise<Inspection> {
+    return (await httpClient.get<Inspection>(`/inspecciones/${encodeURIComponent(id)}`)).data;
+  },
+  async inspectionPdf(id: string): Promise<Blob> {
+    return (await httpClient.get<Blob>(`/inspecciones/${encodeURIComponent(id)}/pdf`, { responseType: 'blob' })).data;
+  },
+  async verifyInspection(code: string): Promise<PublicInspection> {
+    return (await publicClient.get<PublicInspection>(`/inspecciones/verificar/${encodeURIComponent(code.trim())}`)).data;
   },
   // --- Datos ambientales (RF-14) -------------------------------------------
   async environmentOverview(): Promise<EnvOverview> {

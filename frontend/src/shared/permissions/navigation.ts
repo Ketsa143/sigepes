@@ -23,6 +23,7 @@ export const NAV_ITEMS: NavItem[] = [
   { label: 'Vedas', path: '/app/closures', icon: 'block', roles: ALL, group: 'Recursos y control' },
   { label: 'Cuotas', path: '/app/quotas', icon: 'quota', roles: ALL, group: 'Recursos y control' },
   { label: 'Rendimiento sostenible (RMS)', path: '/app/rms', icon: 'trend', roles: ['INSPECTOR', 'ANALYST', 'ADMIN'], group: 'Recursos y control' },
+  { label: 'Actas de inspección', path: '/app/inspections', icon: 'fact', roles: ALL, group: 'Recursos y control' },
   { label: 'Datos ambientales', path: '/app/environment', icon: 'waves', roles: ['INSPECTOR', 'ANALYST', 'ADMIN'], group: 'Recursos y control' },
   { label: 'Zonas restringidas', path: '/app/zones', icon: 'zone', roles: ALL, group: 'Recursos y control' },
   { label: 'Notificaciones', path: '/app/notifications', icon: 'bell', roles: ALL, group: 'Recursos y control' },

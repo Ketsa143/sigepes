@@ -9,6 +9,7 @@ import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import NotificationsNoneIcon from '@mui/icons-material/NotificationsNone';
 import ShieldOutlinedIcon from '@mui/icons-material/ShieldOutlined';
 import WavesIcon from '@mui/icons-material/Waves';
+import AssignmentTurnedInOutlinedIcon from '@mui/icons-material/AssignmentTurnedInOutlined';
 import SummarizeOutlinedIcon from '@mui/icons-material/SummarizeOutlined';
 import WrongLocationIcon from '@mui/icons-material/WrongLocation';
 import {
@@ -35,6 +36,7 @@ const ICON_BY_TYPE: Record<AlertType, ReactNode> = {
   DOCUMENT: <DescriptionOutlinedIcon />,
   EXPORT: <SummarizeOutlinedIcon />,
   ENVIRONMENT: <WavesIcon />,
+  INSPECTION: <AssignmentTurnedInOutlinedIcon />,
 };
 
 const AVATAR_COLOR = { INFO: 'info.main', WARNING: 'warning.main', CRITICAL: 'error.main' } as const;

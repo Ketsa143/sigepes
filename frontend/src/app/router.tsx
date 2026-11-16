@@ -32,6 +32,10 @@ import { PublicLotPage } from '../modules/traceability/pages/PublicLotPage';
 import { PublicMpaPage } from '../modules/mpa/pages/PublicMpaPage';
 import { RmsPage } from '../modules/rms/pages/RmsPage';
 import { EnvironmentPage } from '../modules/environment/pages/EnvironmentPage';
+import { InspectionsPage } from '../modules/inspections/pages/InspectionsPage';
+import { NewInspectionPage } from '../modules/inspections/pages/NewInspectionPage';
+import { InspectionDetailPage } from '../modules/inspections/pages/InspectionDetailPage';
+import { PublicInspectionPage } from '../modules/inspections/pages/PublicInspectionPage';
 
 export const router = createBrowserRouter([
   { path: '/', element: <HomePage /> },
@@ -45,6 +49,9 @@ export const router = createBrowserRouter([
   // HU-13: capa y ficha pública de las Áreas Marinas Protegidas, sin cuenta.
   { path: '/areas-protegidas', element: <PublicMpaPage /> },
   { path: '/areas-protegidas/:id', element: <PublicMpaPage /> },
+  // HU-22: verificación pública del acta de inspección por su código.
+  { path: '/verificar-acta', element: <PublicInspectionPage /> },
+  { path: '/verificar-acta/:code', element: <PublicInspectionPage /> },
   {
     element: <ProtectedRoute />,
     children: [
@@ -74,6 +81,9 @@ export const router = createBrowserRouter([
           { element: <RoleRoute allow={['INSPECTOR', 'ANALYST', 'ADMIN']} />, children: [{ path: 'official-reports', element: <OfficialReportsPage /> }] },
           { element: <RoleRoute allow={['INSPECTOR', 'ANALYST', 'ADMIN']} />, children: [{ path: 'rms', element: <RmsPage /> }] },
           { element: <RoleRoute allow={['INSPECTOR', 'ANALYST', 'ADMIN']} />, children: [{ path: 'environment', element: <EnvironmentPage /> }] },
+          { path: 'inspections', element: <InspectionsPage /> },
+          { element: <RoleRoute allow={['INSPECTOR', 'ADMIN']} />, children: [{ path: 'inspections/new', element: <NewInspectionPage /> }] },
+          { path: 'inspections/:id', element: <InspectionDetailPage /> },
           {
             element: <RoleRoute allow={['INSPECTOR', 'ADMIN']} />,
             children: [

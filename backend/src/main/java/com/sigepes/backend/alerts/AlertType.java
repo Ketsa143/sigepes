@@ -11,5 +11,7 @@ public enum AlertType {
     DOCUMENT,
     EXPORT,
     /** HU-14 · AC-14.3: anomalía térmica u oleaje fuerte en una zona de pesca. */
-    ENVIRONMENT
+    ENVIRONMENT,
+    /** HU-22: acta de inspección levantada a una embarcación del usuario. */
+    INSPECTION
 }
