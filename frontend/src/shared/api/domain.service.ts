@@ -851,6 +851,74 @@ export interface MyMarketRequest {
   decidedAt: string | null;
 }
 
+/** HU-19: módulo educativo. */
+export type CourseIcon = 'ruler' | 'calendar' | 'park' | 'hand' | 'fish' | 'boat' | 'book';
+
+export interface CourseCard {
+  id: string;
+  title: string;
+  summary: string;
+  icon: CourseIcon;
+  lessons: number;
+  minutes: number;
+  completedLessons: number;
+  passed: boolean;
+  certificateId: string | null;
+  certificateCode: string | null;
+  version: number;
+}
+
+export interface CourseLesson {
+  id: string;
+  position: number;
+  title: string;
+  body: string;
+  imageUrl: string | null;
+  audioUrl: string | null;
+  minutes: number;
+  completed: boolean;
+}
+
+export interface CourseDetail {
+  id: string;
+  title: string;
+  summary: string;
+  icon: CourseIcon;
+  version: number;
+  passScore: number;
+  lessons: CourseLesson[];
+  questions: { id: string; position: number; prompt: string; options: string[] }[];
+  completedLessons: number;
+  passed: boolean;
+  certificateId: string | null;
+  certificateCode: string | null;
+}
+
+export interface AttemptResult {
+  score: number;
+  passScore: number;
+  passed: boolean;
+  answers: { questionId: string; correct: boolean; correctIndex: number; explanation: string | null }[];
+  certificateId: string | null;
+  certificateCode: string | null;
+}
+
+export interface CourseInput {
+  title: string;
+  summary: string;
+  icon: CourseIcon;
+  passScore: number;
+  lessons: { title: string; body: string; imageUrl?: string | null; audioUrl?: string | null; minutes: number }[];
+  questions: { prompt: string; options: string[]; correctIndex: number; explanation?: string | null }[];
+}
+
+export interface AdminCourse extends CourseInput {
+  id: string;
+  status: 'DRAFT' | 'PUBLISHED';
+  version: number;
+  updatedAt: string;
+}
+
 export const domainService = {
   // --- Embarcaciones y artes (RF-02) ---------------------------------
   async vessels(): Promise<Vessel[]> {
@@ -970,6 +1038,36 @@ export const domainService = {
       if (cached) return cached;
       throw error;
     }
+  },
+  // --- Educación (HU-19) --------------------------------------------------
+  async courses(): Promise<CourseCard[]> {
+    return (await httpClient.get<CourseCard[]>('/educacion/cursos')).data;
+  },
+  async course(id: string): Promise<CourseDetail> {
+    return (await httpClient.get<CourseDetail>(`/educacion/cursos/${encodeURIComponent(id)}`)).data;
+  },
+  async completeLesson(courseId: string, lessonId: string): Promise<CourseDetail> {
+    return (await httpClient.post<CourseDetail>(`/educacion/cursos/${encodeURIComponent(courseId)}/lecciones/${encodeURIComponent(lessonId)}/completar`)).data;
+  },
+  async submitQuiz(courseId: string, answers: number[]): Promise<AttemptResult> {
+    return (await httpClient.post<AttemptResult>(`/educacion/cursos/${encodeURIComponent(courseId)}/intentos`, { answers })).data;
+  },
+  async certificatePdf(id: string): Promise<Blob> {
+    return (await httpClient.get<Blob>(`/educacion/constancias/${encodeURIComponent(id)}/pdf`, { responseType: 'blob' })).data;
+  },
+  async verifyCertificate(code: string): Promise<{ code: string; holderName: string; courseTitle: string; score: number; issuedAt: string }> {
+    return (await publicClient.get(`/educacion/constancias/verificar/${encodeURIComponent(code.trim())}`)).data;
+  },
+  async adminCourses(): Promise<AdminCourse[]> {
+    return (await httpClient.get<AdminCourse[]>('/educacion/admin/cursos')).data;
+  },
+  async saveCourse(input: CourseInput, id?: string): Promise<AdminCourse> {
+    return (id
+      ? await httpClient.put<AdminCourse>(`/educacion/admin/cursos/${encodeURIComponent(id)}`, input)
+      : await httpClient.post<AdminCourse>('/educacion/admin/cursos', input)).data;
+  },
+  async publishCourse(id: string, publish: boolean): Promise<AdminCourse> {
+    return (await httpClient.post<AdminCourse>(`/educacion/admin/cursos/${encodeURIComponent(id)}/${publish ? 'publicar' : 'retirar'}`)).data;
   },
   // --- Marketplace (HU-16) -------------------------------------------------
   /** Catálogo público: viaja sin sesión. */

@@ -71,6 +71,8 @@ public class SecurityConfig {
                         .permitAll()
                         // HU-16: el catálogo del marketplace es público (solo alias y municipio, AC-16.5).
                         .requestMatchers(HttpMethod.GET, "/api/v1/mercado/ofertas").permitAll()
+                        // HU-19: cualquiera verifica una constancia de curso por su código.
+                        .requestMatchers(HttpMethod.GET, "/api/v1/educacion/constancias/verificar/*").permitAll()
                         // HU-22: cualquiera verifica un acta de inspección por el código impreso en el PDF.
                         .requestMatchers(HttpMethod.GET, "/api/v1/inspecciones/verificar/*").permitAll()
                         // RF-15: la descarga se autoriza con el enlace firmado de corta duración, no con el JWT.

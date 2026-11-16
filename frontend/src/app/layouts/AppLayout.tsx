@@ -8,6 +8,7 @@ import WavesIcon from '@mui/icons-material/Waves';
 import FactCheckOutlinedIcon from '@mui/icons-material/FactCheckOutlined';
 import BalanceIcon from '@mui/icons-material/Balance';
 import StorefrontOutlinedIcon from '@mui/icons-material/StorefrontOutlined';
+import SchoolOutlinedIcon from '@mui/icons-material/SchoolOutlined';
 import CampaignOutlinedIcon from '@mui/icons-material/CampaignOutlined';
 import MarkEmailUnreadOutlinedIcon from '@mui/icons-material/MarkEmailUnreadOutlined';
 import DashboardIcon from '@mui/icons-material/Dashboard';
@@ -48,6 +49,7 @@ import { pendingTripCount } from '../../shared/storage/tripOfflineStore';
 import { syncPendingTrips } from '../../shared/sync/tripSync';
 import { flushReportOutbox } from '../../shared/sync/reportSync';
 import { flushInspectionOutbox } from '../../shared/sync/inspectionSync';
+import { flushLessonQueue } from '../../shared/sync/lessonSync';
 import { glass } from '../../shared/theme/theme';
 import { useAlertStream } from '../../shared/alerts/useAlertStream';
 import { domainService, type AppAlert } from '../../shared/api/domain.service';
@@ -78,6 +80,7 @@ const ICONS: Record<string, ReactNode> = {
   fact: <FactCheckOutlinedIcon />,
   balance: <BalanceIcon />,
   store: <StorefrontOutlinedIcon />,
+  school: <SchoolOutlinedIcon />,
   inbox: <MarkEmailUnreadOutlinedIcon />,
 };
 
@@ -132,6 +135,8 @@ export function AppLayout() {
     }
     // AC-10.6: igual con las denuncias redactadas sin señal.
     if (online) void flushReportOutbox();
+    // HU-19 · AC-19.2: las lecciones vistas sin señal (el servidor es idempotente).
+    if (online) void flushLessonQueue();
     // HU-22 · AC-22.4: y con las actas de inspección firmadas sin señal (idempotentes por clientId).
     if (online) {
       void flushInspectionOutbox().then((sent) => {

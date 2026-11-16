@@ -50,6 +50,7 @@ public class AuditService {
     public static final String MODULE_INSPECTIONS = "inspecciones";
     public static final String MODULE_SANCTIONS = "sancionatorios";
     public static final String MODULE_MARKET = "mercado";
+    public static final String MODULE_EDUCATION = "educacion";
 
     private static final int MAX_DETAIL = 600;
     private static final int MAX_STATE = 2000;
