@@ -77,6 +77,12 @@ public enum ErrorCode {
     // --- Datos ambientales (RF-14) -------------------------------------
     ENV_ZONE_NOT_FOUND(HttpStatus.NOT_FOUND, "La zona de pesca no existe."),
 
+    // --- Inspecciones en campo (HU-22) ---------------------------------
+    INSPECTION_NOT_FOUND(HttpStatus.NOT_FOUND, "El acta de inspección no existe."),
+    INSPECTION_IMMUTABLE(HttpStatus.CONFLICT,
+            "El acta de inspección está firmada y no se puede modificar. El intento quedó registrado."),
+    INVALID_SIGNATURE(HttpStatus.BAD_REQUEST, "La firma no es válida."),
+
     // --- Denuncias (RF-10) --------------------------------------------
     REPORT_NOT_FOUND(HttpStatus.NOT_FOUND, "La denuncia no existe."),
     INVALID_REPORT_TRANSITION(HttpStatus.UNPROCESSABLE_ENTITY,
