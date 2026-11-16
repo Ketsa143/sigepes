@@ -20,17 +20,28 @@ public record Polygon(List<double[]> vertices) {
         if (vertices == null || vertices.size() < 3) {
             throw ApiException.of(ErrorCode.INVALID_ZONE_POLYGON, "El polígono necesita al menos 3 vértices.");
         }
+        List<double[]> rounded = new ArrayList<>(vertices.size());
         for (double[] vertex : vertices) {
-            if (vertex == null || vertex.length != 2 || Math.abs(vertex[0]) > 90 || Math.abs(vertex[1]) > 180) {
+            // Double.isFinite descarta NaN e infinitos, que Math.abs(...) > 90 deja pasar y que
+            // romperían el JSON guardado en la columna polygon.
+            if (vertex == null || vertex.length != 2 || !Double.isFinite(vertex[0]) || !Double.isFinite(vertex[1])
+                    || Math.abs(vertex[0]) > 90 || Math.abs(vertex[1]) > 180) {
                 throw ApiException.of(ErrorCode.INVALID_ZONE_POLYGON,
                         "Cada vértice debe ser [latitud, longitud] con valores válidos.");
             }
+            // Seis decimales (≈ 11 cm) bastan para un GPS y acotan el JSON: 300 vértices con 17 cifras
+            // cada uno superaban los 12 000 caracteres de la columna polygon.
+            rounded.add(new double[] { round6(vertex[0]), round6(vertex[1]) });
         }
-        Polygon polygon = new Polygon(List.copyOf(vertices));
+        Polygon polygon = new Polygon(List.copyOf(rounded));
         if (polygon.selfIntersects()) {
             throw ApiException.of(ErrorCode.INVALID_ZONE_POLYGON, "Los lados del polígono no pueden cruzarse.");
         }
         return polygon;
+    }
+
+    private static double round6(double value) {
+        return Math.round(value * 1_000_000d) / 1_000_000d;
     }
 
     public double minLat() {

@@ -108,6 +108,19 @@ public class RmsService {
         return runRepository.findTopByOrderByCreatedAtDesc().map(RunResponse::from);
     }
 
+    /**
+     * Al arrancar, un cálculo que quedó «en curso» es uno que el reinicio interrumpió: ningún hilo lo
+     * va a terminar. Se marca como fallido para que la pantalla deje de esperarlo (consulta su estado
+     * cada 2 s y bloquea «Recalcular» mientras siga en curso).
+     */
+    @Transactional
+    public int failInterrupted() {
+        List<RmsRunEntity> running = runRepository.findByStatus(RmsRunEntity.Status.RUNNING);
+        running.forEach(run -> run.fail("Interrumpido por un reinicio del servidor; vuelve a calcular."));
+        runRepository.saveAll(running);
+        return running.size();
+    }
+
     /** Procesa los cálculos pendientes en el hilo actual (arranque del servidor y pruebas). */
     public int runPending() {
         List<RmsRunEntity> pending = runRepository.findByStatus(RmsRunEntity.Status.PENDING);

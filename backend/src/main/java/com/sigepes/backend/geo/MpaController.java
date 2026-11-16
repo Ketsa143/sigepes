@@ -83,6 +83,14 @@ public class MpaController {
             double[] values = new double[4];
             for (int i = 0; i < 4; i++) {
                 values[i] = Double.parseDouble(parts[i].trim());
+                // "NaN" e "Infinity" pasan el parseo pero hacen fallar BigDecimal.valueOf con un 500.
+                if (!Double.isFinite(values[i])) {
+                    throw new NumberFormatException(parts[i]);
+                }
+            }
+            if (Math.abs(values[0]) > 90 || Math.abs(values[2]) > 90 || Math.abs(values[1]) > 180
+                    || Math.abs(values[3]) > 180) {
+                throw ApiException.of(ErrorCode.VALIDATION_ERROR, "bbox tiene coordenadas fuera de rango.");
             }
             if (values[0] > values[2] || values[1] > values[3]) {
                 throw ApiException.of(ErrorCode.VALIDATION_ERROR, "bbox tiene los extremos invertidos.");

@@ -57,6 +57,9 @@ class RmsRulesTest extends ApiTestSupport {
     @Autowired
     private RmsService rmsService;
 
+    @Autowired
+    private RmsRunRepository runRepository;
+
     private UserEntity fisher;
     private VesselEntity vessel;
     private String analystToken;
@@ -208,6 +211,21 @@ class RmsRulesTest extends ApiTestSupport {
      * Faenas cerradas en los 10 años completos anteriores: cada año tiene {@code EFFORT[t]} faenas y
      * cada faena captura de cada especie {@code q·B(t)} kg, con B siguiendo el modelo de Schaefer.
      */
+    @Test
+    @DisplayName("Revisión · Un cálculo que quedó en curso por un reinicio se marca como fallido al arrancar")
+    void interruptedRunIsMarkedFailed() {
+        RmsRunEntity run = new RmsRunEntity(Ids.generate("rms"), null);
+        run.start();
+        runRepository.save(run);
+
+        assertThat(rmsService.failInterrupted()).isEqualTo(1);
+
+        RmsRunEntity stored = runRepository.findById(run.getId()).orElseThrow();
+        assertThat(stored.getStatus()).isEqualTo(RmsRunEntity.Status.FAILED);
+        assertThat(stored.getError()).contains("reinicio");
+        assertThat(stored.getFinishedAt()).isNotNull();
+    }
+
     private void givenTripSeries(List<SpeciesEntity> species, double[] r, double[] k, double q) {
         int firstYear = AppClock.today().getYear() - EFFORT.length;
         double[] biomass = k.clone();

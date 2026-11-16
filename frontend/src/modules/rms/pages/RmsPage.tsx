@@ -333,7 +333,9 @@ function ProposeDialog({ estimate, onClose }: { estimate: RmsEstimate; onClose: 
   start.setMonth(start.getMonth() + 1, 1);
   const end = new Date(start);
   end.setMonth(end.getMonth() + 6);
-  const iso = (d: Date) => d.toISOString().slice(0, 10);
+  // Fecha local: toISOString() pasa a UTC y, desde las 7 p. m. en Colombia, daba el día siguiente.
+  const iso = (d: Date) =>
+    `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
   const [form, setForm] = useState({
     proposedKg: String(Math.floor(msy * 0.9)),
     zone: '',
