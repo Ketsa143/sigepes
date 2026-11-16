@@ -97,7 +97,14 @@ export function ZonesPage() {
 
       {zones.some((zone) => zone.mpaId) && (
         <Alert severity="info" sx={{ mb: 2 }}
-          action={<Button component={RouterLink} to="/areas-protegidas" color="inherit" size="small">Ver fichas</Button>}>
+          action={
+            <Stack direction="row" spacing={1}>
+              {user?.role === 'ADMIN' && (
+                <Button component={RouterLink} to="/app/zones/areas-protegidas" color="inherit" size="small">Registrar AMP</Button>
+              )}
+              <Button component={RouterLink} to="/areas-protegidas" color="inherit" size="small">Ver fichas</Button>
+            </Stack>
+          }>
           Las Áreas Marinas Protegidas tienen zonificación: solo la zona intangible prohíbe toda pesca; en uso
           sostenible depende del arte declarado en la faena.
         </Alert>

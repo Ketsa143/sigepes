@@ -30,6 +30,7 @@ import { DocumentsPage } from '../modules/documents/pages/DocumentsPage';
 import { OfficialReportsPage } from '../modules/statistics/pages/OfficialReportsPage';
 import { PublicLotPage } from '../modules/traceability/pages/PublicLotPage';
 import { PublicMpaPage } from '../modules/mpa/pages/PublicMpaPage';
+import { MpaAdminPage } from '../modules/mpa/pages/MpaAdminPage';
 import { RmsPage } from '../modules/rms/pages/RmsPage';
 import { EnvironmentPage } from '../modules/environment/pages/EnvironmentPage';
 import { InspectionsPage } from '../modules/inspections/pages/InspectionsPage';
@@ -100,6 +101,7 @@ export const router = createBrowserRouter([
           { path: 'sanctions', element: <SanctionsPage /> },
           { path: 'sanctions/:id', element: <SanctionDetailPage /> },
           { path: 'marketplace', element: <MarketplacePage /> },
+          { element: <RoleRoute allow={['ADMIN']} />, children: [{ path: 'zones/areas-protegidas', element: <MpaAdminPage /> }] },
           { path: 'education', element: <EducationPage /> },
           { element: <RoleRoute allow={['ADMIN']} />, children: [{ path: 'education/admin', element: <CourseAdminPage /> }] },
           { path: 'education/:id', element: <CoursePage /> },
