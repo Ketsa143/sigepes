@@ -40,6 +40,10 @@ import { SanctionsPage } from '../modules/sanctions/pages/SanctionsPage';
 import { SanctionDetailPage } from '../modules/sanctions/pages/SanctionDetailPage';
 import { MarketplacePage } from '../modules/marketplace/pages/MarketplacePage';
 import { PublicMarketPage } from '../modules/marketplace/pages/PublicMarketPage';
+import { EducationPage } from '../modules/education/pages/EducationPage';
+import { CoursePage } from '../modules/education/pages/CoursePage';
+import { CourseAdminPage } from '../modules/education/pages/CourseAdminPage';
+import { PublicCertificatePage } from '../modules/education/pages/PublicCertificatePage';
 
 export const router = createBrowserRouter([
   { path: '/', element: <HomePage /> },
@@ -58,6 +62,9 @@ export const router = createBrowserRouter([
   { path: '/verificar-acta/:code', element: <PublicInspectionPage /> },
   // HU-16: catálogo público del marketplace.
   { path: '/mercado', element: <PublicMarketPage /> },
+  // HU-19: verificación pública de constancias de cursos.
+  { path: '/verificar-constancia', element: <PublicCertificatePage /> },
+  { path: '/verificar-constancia/:code', element: <PublicCertificatePage /> },
   {
     element: <ProtectedRoute />,
     children: [
@@ -93,6 +100,9 @@ export const router = createBrowserRouter([
           { path: 'sanctions', element: <SanctionsPage /> },
           { path: 'sanctions/:id', element: <SanctionDetailPage /> },
           { path: 'marketplace', element: <MarketplacePage /> },
+          { path: 'education', element: <EducationPage /> },
+          { element: <RoleRoute allow={['ADMIN']} />, children: [{ path: 'education/admin', element: <CourseAdminPage /> }] },
+          { path: 'education/:id', element: <CoursePage /> },
           {
             element: <RoleRoute allow={['INSPECTOR', 'ADMIN']} />,
             children: [

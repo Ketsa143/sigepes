@@ -98,6 +98,11 @@ public enum ErrorCode {
     MARKET_REQUEST_DECIDED(HttpStatus.CONFLICT, "La solicitud ya fue respondida."),
     MARKET_REQUEST_DUPLICATE(HttpStatus.CONFLICT, "Ya tienes una solicitud pendiente por esta oferta."),
 
+    // --- Educación (HU-19) ---------------------------------------------
+    COURSE_NOT_FOUND(HttpStatus.NOT_FOUND, "El curso no existe o no está publicado."),
+    COURSE_ALREADY_EXISTS(HttpStatus.CONFLICT, "Ya existe un curso con ese título."),
+    CERTIFICATE_NOT_FOUND(HttpStatus.NOT_FOUND, "La constancia no existe."),
+
     // --- Denuncias (RF-10) --------------------------------------------
     REPORT_NOT_FOUND(HttpStatus.NOT_FOUND, "La denuncia no existe."),
     INVALID_REPORT_TRANSITION(HttpStatus.UNPROCESSABLE_ENTITY,
