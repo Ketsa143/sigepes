@@ -38,6 +38,8 @@ import { InspectionDetailPage } from '../modules/inspections/pages/InspectionDet
 import { PublicInspectionPage } from '../modules/inspections/pages/PublicInspectionPage';
 import { SanctionsPage } from '../modules/sanctions/pages/SanctionsPage';
 import { SanctionDetailPage } from '../modules/sanctions/pages/SanctionDetailPage';
+import { MarketplacePage } from '../modules/marketplace/pages/MarketplacePage';
+import { PublicMarketPage } from '../modules/marketplace/pages/PublicMarketPage';
 
 export const router = createBrowserRouter([
   { path: '/', element: <HomePage /> },
@@ -54,6 +56,8 @@ export const router = createBrowserRouter([
   // HU-22: verificación pública del acta de inspección por su código.
   { path: '/verificar-acta', element: <PublicInspectionPage /> },
   { path: '/verificar-acta/:code', element: <PublicInspectionPage /> },
+  // HU-16: catálogo público del marketplace.
+  { path: '/mercado', element: <PublicMarketPage /> },
   {
     element: <ProtectedRoute />,
     children: [
@@ -88,6 +92,7 @@ export const router = createBrowserRouter([
           { path: 'inspections/:id', element: <InspectionDetailPage /> },
           { path: 'sanctions', element: <SanctionsPage /> },
           { path: 'sanctions/:id', element: <SanctionDetailPage /> },
+          { path: 'marketplace', element: <MarketplacePage /> },
           {
             element: <RoleRoute allow={['INSPECTOR', 'ADMIN']} />,
             children: [

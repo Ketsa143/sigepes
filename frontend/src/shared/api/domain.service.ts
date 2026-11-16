@@ -589,7 +589,7 @@ export interface PublicLot {
   chain: ChainEvent[];
 }
 
-export type AlertType = 'CLOSURE' | 'QUOTA' | 'PERMIT' | 'ZONE' | 'REPORT' | 'SECURITY' | 'DOCUMENT' | 'EXPORT' | 'ENVIRONMENT' | 'INSPECTION' | 'SANCTION';
+export type AlertType = 'CLOSURE' | 'QUOTA' | 'PERMIT' | 'ZONE' | 'REPORT' | 'SECURITY' | 'DOCUMENT' | 'EXPORT' | 'ENVIRONMENT' | 'INSPECTION' | 'SANCTION' | 'MARKET';
 export type AlertSeverity = 'INFO' | 'WARNING' | 'CRITICAL';
 
 export interface AppAlert {
@@ -803,6 +803,54 @@ export interface SanctionProcess extends SanctionSummary {
   allowedActions: SanctionAction[];
 }
 
+/** HU-16: oferta del marketplace. Solo alias y municipio del vendedor (AC-16.5). */
+export interface MarketOffer {
+  id: string;
+  lotCode: string;
+  species: string;
+  scientificName: string | null;
+  weightKg: number;
+  pricePerKg: number;
+  totalPrice: number;
+  port: string;
+  landingDate: string;
+  sellerAlias: string;
+  municipality: string;
+  notes: string | null;
+  publishedAt: string;
+  expiresAt: string;
+  verificationPath: string;
+}
+
+export interface EligibleLot {
+  lotId: string;
+  lotCode: string;
+  species: string;
+  weightKg: number;
+  port: string;
+  landingDate: string;
+  zone: string;
+}
+
+export type MarketRequestStatus = 'PENDING' | 'ACCEPTED' | 'REJECTED';
+
+export interface MyMarketOffer {
+  offer: MarketOffer;
+  status: 'ACTIVE' | 'SOLD' | 'EXPIRED' | 'WITHDRAWN';
+  requests: { id: string; buyerAlias: string; quantityKg: number; message: string; status: MarketRequestStatus; createdAt: string; decidedAt: string | null }[];
+}
+
+export interface MyMarketRequest {
+  id: string;
+  offer: MarketOffer;
+  offerStatus: MyMarketOffer['status'];
+  quantityKg: number;
+  message: string;
+  status: MarketRequestStatus;
+  createdAt: string;
+  decidedAt: string | null;
+}
+
 export const domainService = {
   // --- Embarcaciones y artes (RF-02) ---------------------------------
   async vessels(): Promise<Vessel[]> {
@@ -922,6 +970,34 @@ export const domainService = {
       if (cached) return cached;
       throw error;
     }
+  },
+  // --- Marketplace (HU-16) -------------------------------------------------
+  /** Catálogo público: viaja sin sesión. */
+  async marketOffers(filters: { speciesId?: string; port?: string; maxPrice?: number } = {}): Promise<MarketOffer[]> {
+    return (await publicClient.get<MarketOffer[]>('/mercado/ofertas', {
+      params: { especieId: filters.speciesId || undefined, puerto: filters.port || undefined, precioMax: filters.maxPrice || undefined },
+    })).data;
+  },
+  async marketEligibleLots(): Promise<EligibleLot[]> {
+    return (await httpClient.get<EligibleLot[]>('/mercado/lotes-disponibles')).data;
+  },
+  async publishOffer(payload: { lotId: string; pricePerKg: number; notes?: string }): Promise<MarketOffer> {
+    return (await httpClient.post<MarketOffer>('/mercado/ofertas', payload)).data;
+  },
+  async withdrawOffer(id: string): Promise<MarketOffer> {
+    return (await httpClient.post<MarketOffer>(`/mercado/ofertas/${encodeURIComponent(id)}/retirar`)).data;
+  },
+  async myMarketOffers(): Promise<MyMarketOffer[]> {
+    return (await httpClient.get<MyMarketOffer[]>('/mercado/mis-ofertas')).data;
+  },
+  async requestOffer(id: string, payload: { quantityKg: number; message: string }): Promise<MyMarketRequest> {
+    return (await httpClient.post<MyMarketRequest>(`/mercado/ofertas/${encodeURIComponent(id)}/solicitudes`, payload)).data;
+  },
+  async myMarketRequests(): Promise<MyMarketRequest[]> {
+    return (await httpClient.get<MyMarketRequest[]>('/mercado/mis-solicitudes')).data;
+  },
+  async decideMarketRequest(id: string, accept: boolean): Promise<MyMarketOffer[]> {
+    return (await httpClient.post<MyMarketOffer[]>(`/mercado/solicitudes/${encodeURIComponent(id)}/${accept ? 'aceptar' : 'rechazar'}`)).data;
   },
   // --- Procesos sancionatorios (HU-23) ------------------------------------
   async openSanction(payload: { inspectionId?: string; reportId?: string; vesselId?: string; infraction?: Infraction; facts?: string }): Promise<SanctionProcess> {

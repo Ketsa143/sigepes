@@ -10,6 +10,7 @@ import MenuBookIcon from '@mui/icons-material/MenuBook';
 import MenuIcon from '@mui/icons-material/Menu';
 import CampaignOutlinedIcon from '@mui/icons-material/CampaignOutlined';
 import ParkIcon from '@mui/icons-material/Park';
+import StorefrontOutlinedIcon from '@mui/icons-material/StorefrontOutlined';
 import PhoneIcon from '@mui/icons-material/Phone';
 import PublicIcon from '@mui/icons-material/Public';
 import QrCode2Icon from '@mui/icons-material/QrCode2';
@@ -46,6 +47,8 @@ const QUICK_ACCESS = [
   { label: 'Vedas vigentes', description: 'Zonas y periodos restringidos', icon: <BlockIcon />, to: '/app/closures' },
   // HU-13 · AC-13.4: las AMP y sus reglas se consultan sin iniciar sesión.
   { label: 'Áreas Marinas Protegidas', description: 'Dónde y cómo se puede pescar', icon: <ParkIcon />, to: '/areas-protegidas' },
+  // HU-16: catálogo público de producto con origen legal.
+  { label: 'Comprar pescado legal', description: 'Ofertas con origen verificado', icon: <StorefrontOutlinedIcon />, to: '/mercado' },
   { label: 'Denunciar pesca ilegal', description: 'Anónimo y sin cuenta', icon: <CampaignOutlinedIcon />, to: '/denunciar' },
 ];
 

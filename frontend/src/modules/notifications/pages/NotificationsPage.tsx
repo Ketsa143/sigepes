@@ -10,6 +10,7 @@ import NotificationsNoneIcon from '@mui/icons-material/NotificationsNone';
 import ShieldOutlinedIcon from '@mui/icons-material/ShieldOutlined';
 import WavesIcon from '@mui/icons-material/Waves';
 import BalanceIcon from '@mui/icons-material/Balance';
+import StorefrontOutlinedIcon from '@mui/icons-material/StorefrontOutlined';
 import AssignmentTurnedInOutlinedIcon from '@mui/icons-material/AssignmentTurnedInOutlined';
 import SummarizeOutlinedIcon from '@mui/icons-material/SummarizeOutlined';
 import WrongLocationIcon from '@mui/icons-material/WrongLocation';
@@ -39,6 +40,7 @@ const ICON_BY_TYPE: Record<AlertType, ReactNode> = {
   ENVIRONMENT: <WavesIcon />,
   INSPECTION: <AssignmentTurnedInOutlinedIcon />,
   SANCTION: <BalanceIcon />,
+  MARKET: <StorefrontOutlinedIcon />,
 };
 
 const AVATAR_COLOR = { INFO: 'info.main', WARNING: 'warning.main', CRITICAL: 'error.main' } as const;
