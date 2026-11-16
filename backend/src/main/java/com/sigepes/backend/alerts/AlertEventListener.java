@@ -5,6 +5,7 @@ import java.util.Set;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
+import com.sigepes.backend.environment.EnvironmentalAnomaly;
 import com.sigepes.backend.geo.RestrictedZoneEntered;
 import com.sigepes.backend.quotas.QuotaThresholdReached;
 import com.sigepes.backend.reports.ReportSubmitted;
@@ -57,6 +58,28 @@ public class AlertEventListener {
                 "La embarcación " + event.vesselName() + " entró a «" + event.zoneName() + "» (" + place
                         + "). Faena " + event.tripId() + ".",
                 "/app/zones", key);
+    }
+
+    /**
+     * HU-14 · AC-14.3 · Anomalía ambiental para los analistas (y el administrador): una alerta por
+     * zona, tipo y día, aunque la importación de cada 6 h la vuelva a detectar.
+     */
+    @EventListener
+    public void onEnvironmentalAnomaly(EnvironmentalAnomaly event) {
+        boolean sst = EnvironmentalAnomaly.SST_ANOMALY.equals(event.kind());
+        String value = String.format(java.util.Locale.ROOT, "%.1f", event.value());
+        String limit = String.format(java.util.Locale.ROOT, "%.1f", event.threshold());
+        String title = sst
+                ? "Anomalía térmica en " + event.zoneName() + ": " + (event.value() > 0 ? "+" : "") + value + " °C"
+                : "Oleaje fuerte en " + event.zoneName() + ": " + value + " m";
+        String message = sst
+                ? "La temperatura superficial del mar en " + event.zoneName() + " se aparta " + value
+                        + " °C de su valor de referencia (umbral ±" + limit + " °C). Revisa si conviene un cierre"
+                        + " preventivo."
+                : "La altura de ola en " + event.zoneName() + " llegó a " + value + " m (umbral " + limit
+                        + " m). Considera avisar a la flota artesanal.";
+        alerts.notifyRoles(QUOTA_AUDIENCE, AlertType.ENVIRONMENT, AlertSeverity.WARNING, title, message,
+                "/app/environment", "env:" + event.zoneId() + ":" + event.kind() + ":" + event.day());
     }
 
     /** AC-11.1 · Denuncia nueva para la bandeja de inspección. Sin datos del denunciante (RN-20). */

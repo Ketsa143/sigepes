@@ -45,4 +45,20 @@ public interface CatchRepository extends JpaRepository<CatchEntity, String> {
             GROUP BY c.species.id, EXTRACT(YEAR FROM t.tripDate)
             """)
     List<Object[]> yearlyCatchAndEffort(@Param("before") LocalDate before);
+
+    /**
+     * HU-14 · AC-14.4 · Kilos diarios de una especie en una zona de pesca (por el nombre de zona que
+     * declara la faena), para superponerlos a la serie ambiental del mismo periodo.
+     */
+    @Query("""
+            SELECT t.tripDate, SUM(c.weightKg)
+            FROM CatchEntity c JOIN c.trip t
+            WHERE c.species.id = :speciesId AND LOWER(t.zone) = LOWER(:zone)
+              AND t.status <> com.sigepes.backend.trips.TripStatus.CANCELLED
+              AND t.tripDate BETWEEN :from AND :to
+            GROUP BY t.tripDate
+            ORDER BY t.tripDate
+            """)
+    List<Object[]> dailyCatchInZone(@Param("speciesId") String speciesId, @Param("zone") String zone,
+            @Param("from") LocalDate from, @Param("to") LocalDate to);
 }
