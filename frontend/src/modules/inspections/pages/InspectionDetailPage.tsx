@@ -6,10 +6,14 @@ import {
   TableHead, TableRow, Typography,
 } from '@mui/material';
 import { useMutation, useQuery } from '@tanstack/react-query';
+import { useState } from 'react';
+import BalanceIcon from '@mui/icons-material/Balance';
 import { Link as RouterLink, useLocation, useParams } from 'react-router-dom';
 import { domainService } from '../../../shared/api/domain.service';
 import { toAppError } from '../../../shared/errors/AppError';
 import { saveBlob } from '../../../shared/files/saveBlob';
+import { useAuthStore } from '../../auth/store/authStore';
+import { OpenSanctionDialog } from '../../sanctions/components/OpenSanctionDialog';
 
 const time = new Intl.DateTimeFormat('es-CO', { dateStyle: 'long', timeStyle: 'short' });
 
@@ -24,6 +28,15 @@ export function InspectionDetailPage() {
     onSuccess: (blob) => saveBlob(blob, `acta-${query.data?.code ?? id}.pdf`),
   });
   const act = query.data;
+  const role = useAuthStore((s) => s.user?.role);
+  const manager = role === 'INSPECTOR' || role === 'ADMIN';
+  const [opening, setOpening] = useState(false);
+  // HU-23: un acta con hallazgos da lugar a un proceso sancionatorio (uno por acta).
+  const processQuery = useQuery({
+    queryKey: ['sanction-for-inspection', id],
+    queryFn: () => domainService.sanctionForInspection(id),
+    enabled: manager && act?.result === 'WITH_FINDINGS',
+  });
 
   if (query.isLoading) return <CircularProgress size={28} />;
   if (query.isError || !act) {
@@ -48,11 +61,23 @@ export function InspectionDetailPage() {
             {act.savedOffline && <Chip variant="outlined" label="Levantada sin señal" />}
           </Stack>
         </Box>
-        <Button variant="contained" startIcon={<PictureAsPdfOutlinedIcon />} disabled={pdf.isPending}
-          onClick={() => pdf.mutate()}>
-          {pdf.isPending ? 'Generando…' : 'Descargar PDF'}
-        </Button>
+        <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
+          {manager && !conform && processQuery.isSuccess && (processQuery.data ? (
+            <Button variant="outlined" startIcon={<BalanceIcon />} component={RouterLink} to={`/app/sanctions/${processQuery.data}`}>
+              Ver proceso sancionatorio
+            </Button>
+          ) : (
+            <Button variant="outlined" color="error" startIcon={<BalanceIcon />} onClick={() => setOpening(true)}>
+              Abrir proceso sancionatorio
+            </Button>
+          ))}
+          <Button variant="contained" startIcon={<PictureAsPdfOutlinedIcon />} disabled={pdf.isPending}
+            onClick={() => pdf.mutate()}>
+            {pdf.isPending ? 'Generando…' : 'Descargar PDF'}
+          </Button>
+        </Stack>
       </Stack>
+      {opening && <OpenSanctionDialog inspectionId={act.id} origin={`el acta ${act.code}`} onClose={() => setOpening(false)} />}
       {pdf.isError && <Alert severity="error" sx={{ mb: 2 }}>{toAppError(pdf.error).message}</Alert>}
 
       <Grid container spacing={2.5}>

@@ -83,6 +83,13 @@ public enum ErrorCode {
             "El acta de inspección está firmada y no se puede modificar. El intento quedó registrado."),
     INVALID_SIGNATURE(HttpStatus.BAD_REQUEST, "La firma no es válida."),
 
+    // --- Procesos sancionatorios (HU-23) -------------------------------
+    SANCTION_NOT_FOUND(HttpStatus.NOT_FOUND, "El proceso sancionatorio no existe."),
+    SANCTION_NOT_APPLICABLE(HttpStatus.UNPROCESSABLE_ENTITY, "No hay mérito para abrir un proceso sancionatorio."),
+    SANCTION_ALREADY_OPEN(HttpStatus.CONFLICT, "Ya existe un proceso sancionatorio para esa acta."),
+    SANCTION_INVALID_TRANSITION(HttpStatus.UNPROCESSABLE_ENTITY, "La actuación no corresponde a la etapa del proceso."),
+    SANCTION_DEADLINE(HttpStatus.UNPROCESSABLE_ENTITY, "La actuación no está dentro del plazo."),
+
     // --- Denuncias (RF-10) --------------------------------------------
     REPORT_NOT_FOUND(HttpStatus.NOT_FOUND, "La denuncia no existe."),
     INVALID_REPORT_TRANSITION(HttpStatus.UNPROCESSABLE_ENTITY,

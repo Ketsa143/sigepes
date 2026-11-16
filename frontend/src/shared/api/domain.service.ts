@@ -589,7 +589,7 @@ export interface PublicLot {
   chain: ChainEvent[];
 }
 
-export type AlertType = 'CLOSURE' | 'QUOTA' | 'PERMIT' | 'ZONE' | 'REPORT' | 'SECURITY' | 'DOCUMENT' | 'EXPORT' | 'ENVIRONMENT' | 'INSPECTION';
+export type AlertType = 'CLOSURE' | 'QUOTA' | 'PERMIT' | 'ZONE' | 'REPORT' | 'SECURITY' | 'DOCUMENT' | 'EXPORT' | 'ENVIRONMENT' | 'INSPECTION' | 'SANCTION';
 export type AlertSeverity = 'INFO' | 'WARNING' | 'CRITICAL';
 
 export interface AppAlert {
@@ -761,6 +761,48 @@ export interface PublicInspection {
   integrityOk: boolean;
 }
 
+/** HU-23: proceso sancionatorio. */
+export type Infraction = 'PROHIBITED_GEAR' | 'FISHING_WITHOUT_PERMIT' | 'PROTECTED_AREA' | 'UNDERSIZED_CATCH'
+  | 'UNAUTHORIZED_GEAR' | 'UNREGISTERED_VESSEL' | 'OTHER';
+export type SanctionStage = 'OPENED' | 'DEFENSE' | 'EVIDENCE' | 'DECISION' | 'APPEAL' | 'CLOSED';
+export type SanctionKind = 'WARNING' | 'FINE' | 'CONFISCATION' | 'PERMIT_SUSPENSION' | 'DISMISSED';
+export type SanctionAction = 'ADVANCE' | 'DECIDE' | 'CLOSE' | 'FILE_DEFENSE' | 'FILE_APPEAL';
+
+export interface SanctionSummary {
+  id: string;
+  number: string;
+  vesselName: string;
+  investigatedName: string;
+  infraction: Infraction;
+  infractionLabel: string;
+  stage: SanctionStage;
+  stageLabel: string;
+  stageDeadline: string | null;
+  overdue: boolean;
+  openedAt: string;
+}
+
+export interface SanctionProcess extends SanctionSummary {
+  origin: 'INSPECTION' | 'REPORT';
+  inspectionId: string | null;
+  inspectionCode: string | null;
+  reportId: string | null;
+  reportCode: string | null;
+  vesselId: string;
+  vesselRegistration: string;
+  facts: string;
+  defenseSubmitted: boolean;
+  appealSubmitted: boolean;
+  sanction: SanctionKind | null;
+  sanctionLabel: string | null;
+  fineSmmlv: number | null;
+  decisionText: string | null;
+  openedBy: string;
+  closedAt: string | null;
+  actions: { sequence: number; kind: string; stageFrom: string | null; stageTo: string; note: string | null; actorName: string; occurredAt: string }[];
+  allowedActions: SanctionAction[];
+}
+
 export const domainService = {
   // --- Embarcaciones y artes (RF-02) ---------------------------------
   async vessels(): Promise<Vessel[]> {
@@ -880,6 +922,30 @@ export const domainService = {
       if (cached) return cached;
       throw error;
     }
+  },
+  // --- Procesos sancionatorios (HU-23) ------------------------------------
+  async openSanction(payload: { inspectionId?: string; reportId?: string; vesselId?: string; infraction?: Infraction; facts?: string }): Promise<SanctionProcess> {
+    return (await httpClient.post<SanctionProcess>('/procesos-sancionatorios', payload)).data;
+  },
+  async sanctions(): Promise<SanctionSummary[]> {
+    return (await httpClient.get<SanctionSummary[]>('/procesos-sancionatorios')).data;
+  },
+  async sanction(id: string): Promise<SanctionProcess> {
+    return (await httpClient.get<SanctionProcess>(`/procesos-sancionatorios/${encodeURIComponent(id)}`)).data;
+  },
+  /** Id del proceso abierto a partir de un acta, o null. */
+  async sanctionForInspection(inspectionId: string): Promise<string | null> {
+    const response = await httpClient.get<{ processId: string } | ''>(`/procesos-sancionatorios/por-acta/${encodeURIComponent(inspectionId)}`);
+    return response.status === 204 || !response.data ? null : response.data.processId;
+  },
+  async sanctionStep(id: string, step: 'avanzar' | 'cierre', note?: string): Promise<SanctionProcess> {
+    return (await httpClient.post<SanctionProcess>(`/procesos-sancionatorios/${encodeURIComponent(id)}/${step}`, { note: note || undefined })).data;
+  },
+  async decideSanction(id: string, payload: { sanction: SanctionKind; fineSmmlv?: number; text: string }): Promise<SanctionProcess> {
+    return (await httpClient.post<SanctionProcess>(`/procesos-sancionatorios/${encodeURIComponent(id)}/decision`, payload)).data;
+  },
+  async fileSanction(id: string, kind: 'descargos' | 'recurso', text: string): Promise<SanctionProcess> {
+    return (await httpClient.post<SanctionProcess>(`/procesos-sancionatorios/${encodeURIComponent(id)}/${kind}`, { text })).data;
   },
   // --- Inspecciones en campo (HU-22) ---------------------------------------
   /** 201 si el acta es nueva, 200 si ya había llegado (reenvío idempotente por clientId). */
