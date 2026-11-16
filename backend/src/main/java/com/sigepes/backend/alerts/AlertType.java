@@ -15,5 +15,7 @@ public enum AlertType {
     /** HU-22: acta de inspección levantada a una embarcación del usuario. */
     INSPECTION,
     /** HU-23: cambio de etapa en un proceso sancionatorio del usuario. */
-    SANCTION
+    SANCTION,
+    /** HU-16: solicitud recibida o respondida en el marketplace. */
+    MARKET
 }

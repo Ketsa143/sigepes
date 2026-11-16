@@ -8,6 +8,7 @@ import org.springframework.stereotype.Component;
 import com.sigepes.backend.environment.EnvironmentalAnomaly;
 import com.sigepes.backend.geo.RestrictedZoneEntered;
 import com.sigepes.backend.inspections.InspectionSigned;
+import com.sigepes.backend.marketplace.MarketNotice;
 import com.sigepes.backend.sanctions.SanctionStageChanged;
 import com.sigepes.backend.quotas.QuotaThresholdReached;
 import com.sigepes.backend.reports.ReportSubmitted;
@@ -107,6 +108,13 @@ public class AlertEventListener {
                 "/app/sanctions/" + event.processId(),
                 "sanction:" + event.processId() + ":" + event.stageLabel() + ":" + event.deadline() + ":"
                         + Integer.toHexString(event.message().hashCode()));
+    }
+
+    /** HU-16 · AC-16.3 · Solicitudes del marketplace y sus respuestas. */
+    @EventListener
+    public void onMarket(MarketNotice event) {
+        alerts.notify(event.recipientId(), AlertType.MARKET, AlertSeverity.INFO, event.title(), event.message(),
+                event.link(), event.key());
     }
 
     /** AC-11.1 · Denuncia nueva para la bandeja de inspección. Sin datos del denunciante (RN-20). */

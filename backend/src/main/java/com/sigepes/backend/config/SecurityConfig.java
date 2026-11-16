@@ -69,6 +69,8 @@ public class SecurityConfig {
                         // HU-13: consulta pública de las Áreas Marinas Protegidas y su zonificación.
                         .requestMatchers(HttpMethod.GET, "/api/v1/areas-protegidas", "/api/v1/areas-protegidas/*")
                         .permitAll()
+                        // HU-16: el catálogo del marketplace es público (solo alias y municipio, AC-16.5).
+                        .requestMatchers(HttpMethod.GET, "/api/v1/mercado/ofertas").permitAll()
                         // HU-22: cualquiera verifica un acta de inspección por el código impreso en el PDF.
                         .requestMatchers(HttpMethod.GET, "/api/v1/inspecciones/verificar/*").permitAll()
                         // RF-15: la descarga se autoriza con el enlace firmado de corta duración, no con el JWT.

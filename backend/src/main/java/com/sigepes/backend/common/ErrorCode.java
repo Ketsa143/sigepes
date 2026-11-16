@@ -90,6 +90,14 @@ public enum ErrorCode {
     SANCTION_INVALID_TRANSITION(HttpStatus.UNPROCESSABLE_ENTITY, "La actuación no corresponde a la etapa del proceso."),
     SANCTION_DEADLINE(HttpStatus.UNPROCESSABLE_ENTITY, "La actuación no está dentro del plazo."),
 
+    // --- Marketplace (HU-16) -------------------------------------------
+    MARKET_OFFER_NOT_FOUND(HttpStatus.NOT_FOUND, "La oferta no existe."),
+    MARKET_OFFER_CLOSED(HttpStatus.CONFLICT, "La oferta ya no está disponible."),
+    MARKET_LOT_NOT_AVAILABLE(HttpStatus.UNPROCESSABLE_ENTITY, "Solo puedes ofertar lotes con origen verificado."),
+    MARKET_REQUEST_NOT_FOUND(HttpStatus.NOT_FOUND, "La solicitud no existe."),
+    MARKET_REQUEST_DECIDED(HttpStatus.CONFLICT, "La solicitud ya fue respondida."),
+    MARKET_REQUEST_DUPLICATE(HttpStatus.CONFLICT, "Ya tienes una solicitud pendiente por esta oferta."),
+
     // --- Denuncias (RF-10) --------------------------------------------
     REPORT_NOT_FOUND(HttpStatus.NOT_FOUND, "La denuncia no existe."),
     INVALID_REPORT_TRANSITION(HttpStatus.UNPROCESSABLE_ENTITY,

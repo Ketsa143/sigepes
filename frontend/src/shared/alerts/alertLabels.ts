@@ -12,6 +12,7 @@ export const ALERT_TYPE_LABEL: Record<AlertType, string> = {
   ENVIRONMENT: 'Ambiental',
   INSPECTION: 'Inspección',
   SANCTION: 'Proceso sancionatorio',
+  MARKET: 'Marketplace',
 };
 
 /** AC-11.2 · Informativa / Atención / Crítica. */
